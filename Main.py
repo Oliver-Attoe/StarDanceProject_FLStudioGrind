@@ -64,7 +64,14 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
 
-    
+        if self.rect.centerx <= 0 or self.rect.centerx >= 1000:
+            self.kill()
+
+        if self.rect.centery <=0 or self.rect.centery >=800:
+            self.kill()
+
+
+
 
 pygame.init()
 screen = pygame.display.set_mode((1000, 800))
@@ -113,8 +120,8 @@ while True:
         screen.blit(s_text, s_text_rect)
 
     elif game_state == "playing":
-        #if player_group.sprite.gravity_active == True:
-            #player_group.sprite.gravity_apply()
+        if player_group.sprite.gravity_active == True:
+            player_group.sprite.gravity_apply()
 
         screen.blit(bg_surface, (0,0))
         screen.blit(floor_surface,floor_rect)
@@ -122,9 +129,12 @@ while True:
         bullet_group.update()
         bullet_group.draw(screen)
 
+        
+
         player_group.sprite.follow_mouse(x, y)      
         player_group.draw(screen)
         player_group.sprite.retical_line()
+
 
 
     pygame.display.update()
