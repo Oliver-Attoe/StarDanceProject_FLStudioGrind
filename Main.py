@@ -31,7 +31,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.original_image = pygame.image.load("Images/GUN.png").convert_alpha()
         self.image = self.original_image
-        self.rect = self.image.get_rect(center=(500, 550))#
+        self.rect = self.image.get_rect(center=(500, 550))
 
         self.gravity_enabled = False
 
@@ -51,9 +51,32 @@ class Player(pygame.sprite.Sprite):
 
         self.angle = math.degrees(math.atan2(y_dist, x_dist))
 
-    def retical_line_start(self):
-    #line starts at barrel, ends at mouse location
-       pygame.draw.line(screen, "white", self.barrel_position(), pygame.mouse.get_pos(), 3)
+    def retical_line(self):
+    # line starts at barrel, ends at mouse location
+
+        barrel = self.barrel_position()
+        mouse = pygame.mouse.get_pos()
+
+        dx = mouse[0] - barrel[0]
+        dy = mouse[1] - barrel[1]
+
+        hypotenuse_length = math.hypot(dx, dy)
+
+        if hypotenuse_length == 0:
+            return
+
+        direction_x = dx / hypotenuse_length
+        direction_y = dy / hypotenuse_length
+
+        for c in range(0, int(hypotenuse_length), 15):
+            hyp_x = barrel[0] + direction_x * c
+            hyp_y = barrel[1] + direction_y * c
+
+            pygame.draw.circle(screen, "white", (int(hyp_x), int(hyp_y)), 3)
+           
+
+
+
 
 
     def barrel_position(self):
@@ -151,8 +174,9 @@ while True:
         screen.blit(floor_surface,floor_rect)
 
         if playing_state == "start":
-            player_group.sprite.retical_line_start()
             player_group.sprite.follow_mouse()
+            player_group.sprite.retical_line()
+            
 
         if playing_state == "in_proggress":
             player_group.sprite.in_air_rotate()
@@ -166,11 +190,6 @@ while True:
       
         player_group.draw(screen)
 
-
-
-
-
-
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(20)
     
