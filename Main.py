@@ -31,16 +31,19 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.original_image = pygame.image.load("Images/GUN.png").convert_alpha()
         self.image = self.original_image
-        self.rect = self.image.get_rect(center=(500, 550))
+        self.rect = self.image.get_rect(center=(500, 550))#
 
-        self.barrel_offset = pygame.Vector2(25,12)
-        self.p_velocity = pygame.Vector2(0, 0)
+        self.gravity_enabled = False
+
+        self.angle = 0
+
+        self.barrel_offset = pygame.Vector2(30,12)
         
-        self.gravity_active = False
+        self.p_velocity = pygame.Vector2(0, 0)
+
        
 
-    def follow_mouse(self,x ,y):
-        #image rotation follows mouse movement
+    def follow_mouse(self):
         self.m_pos = pygame.mouse.get_pos()
 
         x_dist = self.m_pos[0] - self.rect.centerx
@@ -48,26 +51,31 @@ class Player(pygame.sprite.Sprite):
 
         self.angle = math.degrees(math.atan2(y_dist, x_dist))
 
-        old_center = self.rect.center
-
-        self.image = pygame.transform.rotate(self.original_image, self.angle - 180)
-        self.rect = self.image.get_rect(center=old_center)
-
-        self.barrel_pos = self.barrel_offset.rotate(-self.angle) + self.rect.center
-
-    def retical_line(self):
-        #line starts at barrel, ends at mouse location
-        pygame.draw.line(screen, "white", self.barrel_pos, pygame.mouse.get_pos(), 3)
+    def retical_line_start(self):
+    #line starts at barrel, ends at mouse location
+       pygame.draw.line(screen, "white", self.barrel_position(), pygame.mouse.get_pos(), 3)
 
 
+    def barrel_position(self):
+        rotated_offset = self.barrel_offset.rotate(-(self.angle))
+        return pygame.Vector2(self.rect.center) + rotated_offset
+    
     def recoil(self,velocity):
         self.p_velocity -= velocity
 
+    def in_air_rotate(self):
+        self.angle += 2
+
     def update(self):
-        if self.gravity_active == True:
+        if self.gravity_enabled == True:
             self.rect.y += GRAVITY
 
-        self.p_velocity *= 0.97
+        self.image = pygame.transform.rotate(self.original_image, self.angle -180)
+        
+        old_center = self.rect.center
+        self.rect = self.image.get_rect(center=old_center)
+
+        self.p_velocity *= 0.975
         self.rect.x += self.p_velocity.x
         self.rect.y += self.p_velocity.y
 
@@ -75,16 +83,14 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, barrel_pos, m_pos):
+    def __init__(self, barrel_offset,angle):
         super().__init__()
 
         self.image = pygame.image.load("Images/BULLET.png").convert_alpha()
-        self.rect = self.image.get_rect(center=barrel_pos)
+        self.rect = self.image.get_rect(center=barrel_offset)
 
-        direction = pygame.Vector2(
-            m_pos[0] - barrel_pos[0],
-            m_pos[1] - barrel_pos[1]
-        )
+        direction = pygame.Vector2(1,0).rotate(-angle)
+
 
         if direction.length() > 0:
             direction = direction.normalize()
@@ -122,12 +128,13 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if start_button_rect.collidepoint(event.pos):
                 game_state = "playing"
-            
-            elif game_state == "playing":
-                player_group.sprite.gravity_active = True
-                playing_state = "in_progress"
 
-                bullet = Bullet(player_group.sprite.barrel_pos, player_group.sprite.m_pos)
+            elif game_state == "playing":
+                playing_state = "in_proggress"
+                player_group.sprite.gravity_enabled = True
+                barrel = player_group.sprite.barrel_position()
+
+                bullet = Bullet(barrel, player_group.sprite.angle)
                 bullet_group.add(bullet)
 
                 player_group.sprite.recoil(bullet.velocity)
@@ -139,22 +146,27 @@ while True:
         screen.blit(s_text, s_text_rect)
 
     elif game_state == "playing":
-        if player_group.sprite.gravity_active == True:
-            player_group.sprite.update()
 
         screen.blit(bg_surface, (0,0))
         screen.blit(floor_surface,floor_rect)
 
+        if playing_state == "start":
+            player_group.sprite.retical_line_start()
+            player_group.sprite.follow_mouse()
+
+        if playing_state == "in_proggress":
+            player_group.sprite.in_air_rotate()
+
+        player_group.update()
+
         bullet_group.update()
         bullet_group.draw(screen)
 
-        
-        player_group.update()
-        player_group.sprite.follow_mouse(x, y)      
+
+      
         player_group.draw(screen)
 
-        if playing_state == "start":
-            player_group.sprite.retical_line()
+
 
 
 
