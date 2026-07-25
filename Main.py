@@ -10,6 +10,10 @@ GRAVITY = 2
 game_state = "start_menu"
 playing_state = "start"
 
+start_screen_sound = pygame.mixer.music.load("Sounds/human_music.mp3")
+pygame.mixer.music.play(-1)
+button_fx = pygame.mixer.Sound("Sounds/button_pressed.mp3")
+gun_fired_fx = pygame.mixer.Sound("Sounds/bullet_fired.mp3")
 
 start_surface = pygame.image.load("Images/Start screen.png").convert()
 s_text_test = pygame.font.Font("Images/SpyAgencyBoldItalic-BLLnV.otf", 60)
@@ -149,10 +153,13 @@ while True:
             exit()
     
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if start_button_rect.collidepoint(event.pos):
+            if start_button_rect.collidepoint(event.pos) and game_state == "start_menu":
+                button_fx.play()
                 game_state = "playing"
+                
 
             elif game_state == "playing":
+                gun_fired_fx.play()
                 playing_state = "in_proggress"
                 player_group.sprite.gravity_enabled = True
                 barrel = player_group.sprite.barrel_position()
@@ -168,10 +175,12 @@ while True:
         screen.blit(start_button, start_button_rect)
         screen.blit(s_text, s_text_rect)
 
-    elif game_state == "playing":
 
+    elif game_state == "playing":
+        pygame.mixer.music.stop()
         screen.blit(bg_surface, (0,0))
         screen.blit(floor_surface,floor_rect)
+        
 
         if playing_state == "start":
             player_group.sprite.follow_mouse()
