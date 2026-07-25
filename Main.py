@@ -10,6 +10,7 @@ GRAVITY = 2
 game_state = "start_menu"
 playing_state = "start"
 
+
 start_surface = pygame.image.load("Images/Start screen.png").convert()
 s_text_test = pygame.font.Font("Images/SpyAgencyBoldItalic-BLLnV.otf", 60)
 s_text = s_text_test.render ("Barrel Roll Bullet", True, "Black")
@@ -74,11 +75,6 @@ class Player(pygame.sprite.Sprite):
 
             pygame.draw.circle(screen, "white", (int(hyp_x), int(hyp_y)), 3)
            
-
-
-
-
-
     def barrel_position(self):
         rotated_offset = self.barrel_offset.rotate(-(self.angle))
         return pygame.Vector2(self.rect.center) + rotated_offset
@@ -98,6 +94,7 @@ class Player(pygame.sprite.Sprite):
         old_center = self.rect.center
         self.rect = self.image.get_rect(center=old_center)
 
+
         self.p_velocity *= 0.975
         self.rect.x += self.p_velocity.x
         self.rect.y += self.p_velocity.y
@@ -109,8 +106,10 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, barrel_offset,angle):
         super().__init__()
 
-        self.image = pygame.image.load("Images/BULLET.png").convert_alpha()
+        self.original_image = pygame.image.load("Images/BULLET.png").convert_alpha()
+        self.image = self.original_image
         self.rect = self.image.get_rect(center=barrel_offset)
+        self.angle = angle
 
         direction = pygame.Vector2(1,0).rotate(-angle)
 
@@ -120,11 +119,12 @@ class Bullet(pygame.sprite.Sprite):
 
         self.velocity = direction * 10
 
-
-
-    
-
     def update(self):
+        self.image = pygame.transform.rotate(self.original_image, self.angle -180)
+        
+        old_center = self.rect.center
+        self.rect = self.image.get_rect(center=old_center)
+
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
 
@@ -191,5 +191,5 @@ while True:
         player_group.draw(screen)
 
     pygame.display.update()
-    clock.tick(20)
+    clock.tick(60)
     
