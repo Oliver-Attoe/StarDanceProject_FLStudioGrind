@@ -1,9 +1,12 @@
 import pygame
 from sys import exit
 import math
+import pytmx
+from pytmx.util_pygame import load_pygame
+
 
 pygame.init()
-screen = pygame.display.set_mode((1000, 800))
+screen = pygame.display.set_mode((1200, 800))
 clock = pygame.time.Clock()
 
 GRAVITY = 2
@@ -15,20 +18,42 @@ pygame.mixer.music.play(-1)
 button_fx = pygame.mixer.Sound("Sounds/button_pressed.mp3")
 gun_fired_fx = pygame.mixer.Sound("Sounds/bullet_fired.mp3")
 
+tmx_data = load_pygame("Maps/place_holder_map.tmx")
+collision_rects = []
+
+
+def draw_map(surface, tmx_data):
+    for layer in tmx_data.visible_layers:
+        if isinstance(layer, pytmx.TiledTileLayer):
+            for x, y, gid in layer:
+                tile = tmx_data.get_tile_image_by_gid(gid)
+
+                if tile:
+                    surface.blit(
+                        tile,
+                        (x * tmx_data.tilewidth,
+                         y * tmx_data.tileheight)
+                    )
+
+
 start_surface = pygame.image.load("Images/Start screen.png").convert()
 s_text_test = pygame.font.Font("Images/SpyAgencyBoldItalic-BLLnV.otf", 60)
 s_text = s_text_test.render ("Barrel Roll Bullet", True, "Black")
-s_text_rect = s_text.get_rect(center = (500, 125))
+s_text_rect = s_text.get_rect(center = (600, 125))
 start_button  = pygame.image.load("Images/Button.png").convert()
-start_button_rect = start_button.get_rect(center = (500,400))
+start_button_rect = start_button.get_rect(center = (600,400))
 
 #This section is sisplayed in playing game state
-bg_surface = pygame.image.load("Images/Background_1.png").convert()
+bg_surface = pygame.image.load("Images/BG.png").convert()
 floor_surface = pygame.image.load("Images/Floor.png").convert()
-floor_rect = floor_surface.get_rect(midbottom = (500, 800))
+floor_rect = floor_surface.get_rect(midbottom = (600, 800))
 
 x = 500
 y = 575
+
+
+                    
+
 
 class Player(pygame.sprite.Sprite):
 
@@ -36,7 +61,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.original_image = pygame.image.load("Images/GUN.png").convert_alpha()
         self.image = self.original_image
-        self.rect = self.image.get_rect(center=(500, 550))
+        self.rect = self.image.get_rect(center=(600, 550))
+        self.mask = pygame.mask.from_surface(self.image)
 
         self.gravity_enabled = False
 
@@ -87,7 +113,10 @@ class Player(pygame.sprite.Sprite):
         self.p_velocity -= velocity
 
     def in_air_rotate(self):
-        self.angle += 2
+        self.angle += 4
+
+    #def collision(self):
+
 
     def update(self):
         if self.gravity_enabled == True:
@@ -121,7 +150,7 @@ class Bullet(pygame.sprite.Sprite):
         if direction.length() > 0:
             direction = direction.normalize()
 
-        self.velocity = direction * 10
+        self.velocity = direction * 15
 
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
@@ -132,7 +161,7 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
 
-        if self.rect.centerx <= 0 or self.rect.centerx >= 1000:
+        if self.rect.centerx <= 0 or self.rect.centerx >= 1200:
             self.kill()
 
         if self.rect.centery <=0 or self.rect.centery >=800:
@@ -143,6 +172,9 @@ player_group = pygame.sprite.GroupSingle()
 player_group.add(Player(x, y))
 
 bullet_group = pygame.sprite.Group()
+
+obstacle_group = pygame.sprite.Group()
+
 
 #Game loop
 while True:
@@ -174,12 +206,14 @@ while True:
         screen.blit(start_surface, (0,0))
         screen.blit(start_button, start_button_rect)
         screen.blit(s_text, s_text_rect)
+        
 
 
     elif game_state == "playing":
         pygame.mixer.music.stop()
         screen.blit(bg_surface, (0,0))
         screen.blit(floor_surface,floor_rect)
+        draw_map(screen, tmx_data)
         
 
         if playing_state == "start":
