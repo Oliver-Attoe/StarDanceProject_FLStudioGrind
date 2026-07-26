@@ -19,21 +19,53 @@ button_fx = pygame.mixer.Sound("Sounds/button_pressed.mp3")
 gun_fired_fx = pygame.mixer.Sound("Sounds/bullet_fired.mp3")
 
 tmx_data = load_pygame("Maps/place_holder_map.tmx")
-collision_rects = []
+tiles = []
 
+def load_collision():
+    for layer in tmx_data.visible_layers:
+        if isinstance(layer, pytmx.TiledTileLayer):
 
-def draw_map(surface, tmx_data):
+            for x, y, gid in layer:
+
+                tile = tmx_data.get_tile_image_by_gid(gid)
+
+                if tile:
+                    tiles.append(
+                        pygame.Rect(
+                            x * tmx_data.tilewidth,
+                            y * tmx_data.tileheight,
+                            tmx_data.tilewidth,
+                            tmx_data.tileheight
+                        )
+                    )
+def draw_map():
     for layer in tmx_data.visible_layers:
         if isinstance(layer, pytmx.TiledTileLayer):
             for x, y, gid in layer:
                 tile = tmx_data.get_tile_image_by_gid(gid)
 
                 if tile:
-                    surface.blit(
+                    screen.blit(
                         tile,
                         (x * tmx_data.tilewidth,
                          y * tmx_data.tileheight)
                     )
+
+load_collision()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 start_surface = pygame.image.load("Images/Start screen.png").convert()
@@ -48,8 +80,8 @@ bg_surface = pygame.image.load("Images/BG.png").convert()
 floor_surface = pygame.image.load("Images/Floor.png").convert()
 floor_rect = floor_surface.get_rect(midbottom = (600, 800))
 
-x = 500
-y = 575
+x = 600
+y = 550
 
 
                     
@@ -61,8 +93,9 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.original_image = pygame.image.load("Images/GUN.png").convert_alpha()
         self.image = self.original_image
-        self.rect = self.image.get_rect(center=(600, 550))
+        self.rect = self.image.get_rect(center=(x, y))
         self.mask = pygame.mask.from_surface(self.image)
+        self.pos = pygame.Vector2(self.rect.center)
 
         self.gravity_enabled = False
 
@@ -70,7 +103,7 @@ class Player(pygame.sprite.Sprite):
 
         self.barrel_offset = pygame.Vector2(30,12)
         
-        self.p_velocity = pygame.Vector2(0, 0)
+        self.velocity = pygame.Vector2(0, 0)
 
        
 
@@ -110,17 +143,15 @@ class Player(pygame.sprite.Sprite):
         return pygame.Vector2(self.rect.center) + rotated_offset
     
     def recoil(self,velocity):
-        self.p_velocity -= velocity
+        self.velocity -= velocity
 
-    def in_air_rotate(self):
-        self.angle += 4
-
-    #def collision(self):
+    #def in_air_rotate(self):
+        #self.angle += 6
 
 
     def update(self):
         if self.gravity_enabled == True:
-            self.rect.y += GRAVITY
+            self.velocity.y += GRAVITY
 
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
         
@@ -128,10 +159,57 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=old_center)
 
 
-        self.p_velocity *= 0.975
-        self.rect.x += self.p_velocity.x
-        self.rect.y += self.p_velocity.y
+        self.pos.x += self.velocity.x
+        self.rect.centerx = self.pos.x
+        self.collisions_x()
 
+        self.pos.y += self.velocity.y
+        self.rect.centery = self.pos.y
+        self.collisions_y()
+
+        self.velocity.x *= 0.975
+
+
+
+
+
+    def tile_collision(self):
+        collisions = []
+        for tile in tiles:
+            if self.rect.colliderect(tile):
+                collisions.append(tile)
+        return collisions
+
+    def collisions_x(self):
+        colides = self.tile_collision()
+        for tile in colides:
+            if self.velocity.x > 0:
+                self.rect.right = tile.left
+                self.pos.x = self.rect.centerx
+
+            elif self.velocity.x < 0:
+                self.rect.left = tile.right
+                self.pos.x = self.rect.centerx
+
+    def collisions_y(self):
+        self.on_ground = False
+
+        for tile in self.tile_collision():
+
+            if self.velocity.y > 0:
+                self.rect.bottom = tile.top
+                self.pos.y = self.rect.centery
+                self.velocity.y = 0
+                self.on_ground = True
+
+            elif self.velocity.y < 0:
+                self.rect.top = tile.bottom
+                self.pos.y = self.rect.centery
+                self.velocity.y = 0
+
+
+
+                
 
 
 
@@ -207,13 +285,18 @@ while True:
         screen.blit(start_button, start_button_rect)
         screen.blit(s_text, s_text_rect)
         
+        
 
 
     elif game_state == "playing":
         pygame.mixer.music.stop()
         screen.blit(bg_surface, (0,0))
         screen.blit(floor_surface,floor_rect)
-        draw_map(screen, tmx_data)
+        draw_map()
+        
+        
+
+        
         
 
         if playing_state == "start":
@@ -221,10 +304,13 @@ while True:
             player_group.sprite.retical_line()
             
 
-        if playing_state == "in_proggress":
-            player_group.sprite.in_air_rotate()
+        #if playing_state == "in_proggress":
+            #player_group.sprite.in_air_rotate()
+
+
 
         player_group.update()
+
 
         bullet_group.update()
         bullet_group.draw(screen)
