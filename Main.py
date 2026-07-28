@@ -9,9 +9,13 @@ pygame.init()
 screen = pygame.display.set_mode((1200, 800))
 clock = pygame.time.Clock()
 
-GRAVITY = 2
+GRAVITY = 0.5
+BOUNCE = 0.2
 game_state = "start_menu"
 playing_state = "start"
+paused = False
+
+
 
 start_screen_sound = pygame.mixer.music.load("Sounds/human_music.mp3")
 pygame.mixer.music.play(-1)
@@ -30,14 +34,18 @@ def load_collision():
                 tile = tmx_data.get_tile_image_by_gid(gid)
 
                 if tile:
-                    tiles.append(
-                        pygame.Rect(
+                    
+                        rect = pygame.Rect(
                             x * tmx_data.tilewidth,
                             y * tmx_data.tileheight,
                             tmx_data.tilewidth,
                             tmx_data.tileheight
                         )
-                    )
+
+                        mask = pygame.mask.Mask(rect.size, fill=True)
+
+                        tiles.append({"rect": rect, "mask": mask})
+ 
 def draw_map():
     for layer in tmx_data.visible_layers:
         if isinstance(layer, pytmx.TiledTileLayer):
@@ -53,22 +61,7 @@ def draw_map():
 
 load_collision()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-start_surface = pygame.image.load("Images/Start screen.png").convert()
+start_surface = pygame.image.load("Images/Start_screen.png").convert()
 s_text_test = pygame.font.Font("Images/SpyAgencyBoldItalic-BLLnV.otf", 60)
 s_text = s_text_test.render ("Barrel Roll Bullet", True, "Black")
 s_text_rect = s_text.get_rect(center = (600, 125))
@@ -77,14 +70,21 @@ start_button_rect = start_button.get_rect(center = (600,400))
 
 #This section is sisplayed in playing game state
 bg_surface = pygame.image.load("Images/BG.png").convert()
-floor_surface = pygame.image.load("Images/Floor.png").convert()
-floor_rect = floor_surface.get_rect(midbottom = (600, 800))
+
+pause_surface = pygame.image.load("Images/Pause.png").convert()
+pause_rect = pause_surface.get_rect(topleft = (1140, 0))
+pause_menu = pygame.image.load("Images/Pause_menu.png")
+pause_menu_rect = pause_menu.get_rect(center = (600, 400))
+home_surface = pygame.image.load("Images/Home_button.png")
+home_rect = home_surface.get_rect(center = (600, 400))
+cont_surface = pygame.image.load("Images/continue_button.png")
+cont_rect = cont_surface.get_rect(center = (700, 400))
 
 x = 600
 y = 550
 
 
-                    
+
 
 
 class Player(pygame.sprite.Sprite):
@@ -101,10 +101,13 @@ class Player(pygame.sprite.Sprite):
 
         self.angle = 0
 
-        self.barrel_offset = pygame.Vector2(30,12)
+        self.barrel_offset = pygame.Vector2(35,10)
         
         self.velocity = pygame.Vector2(0, 0)
 
+        self.rot_speed = 5
+
+        
        
 
     def follow_mouse(self):
@@ -137,6 +140,7 @@ class Player(pygame.sprite.Sprite):
             hyp_y = barrel[1] + direction_y * c
 
             pygame.draw.circle(screen, "white", (int(hyp_x), int(hyp_y)), 3)
+            #pygame.draw.circle(screen, "red", barrel, 5)
            
     def barrel_position(self):
         rotated_offset = self.barrel_offset.rotate(-(self.angle))
@@ -145,72 +149,152 @@ class Player(pygame.sprite.Sprite):
     def recoil(self,velocity):
         self.velocity -= velocity
 
-    #def in_air_rotate(self):
-        #self.angle += 6
+    def in_air_rotate(self):
+        self.angle += self.rot_speed
 
-
-    def update(self):
-        if self.gravity_enabled == True:
-            self.velocity.y += GRAVITY
-
+    def rotate_image(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
-        
+                
         old_center = self.rect.center
         self.rect = self.image.get_rect(center=old_center)
+        
+        self.mask = pygame.mask.from_surface(self.image)
 
-
-        self.pos.x += self.velocity.x
-        self.rect.centerx = self.pos.x
-        self.collisions_x()
-
-        self.pos.y += self.velocity.y
-        self.rect.centery = self.pos.y
-        self.collisions_y()
-
-        self.velocity.x *= 0.975
-
-
-
-
+    def stop_spin(self):
+        if self.has_hit == True:
+            self.rot_speed = 0
+        else:
+            self.rot_speed = 10
 
     def tile_collision(self):
+       
         collisions = []
+
         for tile in tiles:
-            if self.rect.colliderect(tile):
-                collisions.append(tile)
+
+            if self.rect.colliderect(tile["rect"]):
+
+                offset = (
+                    tile["rect"].x - self.rect.x,
+                    tile["rect"].y - self.rect.y
+                )
+
+                if self.mask.overlap(tile["mask"], offset):
+                    collisions.append(tile)
+                    
+
         return collisions
 
-    def collisions_x(self):
-        colides = self.tile_collision()
-        for tile in colides:
-            if self.velocity.x > 0:
-                self.rect.right = tile.left
-                self.pos.x = self.rect.centerx
+    def get_tile_mask(self):
 
-            elif self.velocity.x < 0:
-                self.rect.left = tile.right
-                self.pos.x = self.rect.centerx
+        collisions = self.tile_collision()
+
+        for tile in collisions:
+
+            mask_surface = tile["mask"].to_surface()
+
+            screen.blit(
+                mask_surface,
+                tile["rect"].topleft
+            )
 
     def collisions_y(self):
-        self.on_ground = False
 
         for tile in self.tile_collision():
 
-            if self.velocity.y > 0:
-                self.rect.bottom = tile.top
-                self.pos.y = self.rect.centery
-                self.velocity.y = 0
-                self.on_ground = True
+            if self.velocity.y > 0:  # falling
+                while self.mask.overlap(
+                    tile["mask"],
+                    (
+                        tile["rect"].x - self.rect.x,
+                        tile["rect"].y - self.rect.y
+                    )
+                ):
+                    self.pos.y -= 1
+                    self.rect.centery = self.pos.y
+                    self.has_hit = True
 
-            elif self.velocity.y < 0:
-                self.rect.top = tile.bottom
-                self.pos.y = self.rect.centery
-                self.velocity.y = 0
+                    self.velocity.y = 0
+                    
+
+                    
+
+            elif self.velocity.y < 0:  # hitting ceiling
+                while self.mask.overlap(
+                    tile["mask"],
+                    (
+                        tile["rect"].x - self.rect.x,
+                        tile["rect"].y - self.rect.y
+                    )
+                ):
+                    self.pos.y += 1
+                    self.rect.centery = self.pos.y
+                    self.has_hit = True
+
+                    self.velocity.y = 0
 
 
+            
 
-                
+    def collisions_x(self):
+        for tile in self.tile_collision():
 
+            if self.velocity.x > 0:  # moving right
+                while self.mask.overlap(
+                    tile["mask"],
+                    (
+                        tile["rect"].x - self.rect.x,
+                        tile["rect"].y - self.rect.y
+                    )
+                ):
+                    self.pos.x -= 1
+                    self.rect.centerx = self.pos.x
+                    self.has_hit = True
+
+                    self.velocity.x = 0
+
+            elif self.velocity.x < 0:  # moving left
+                while self.mask.overlap(
+                    tile["mask"],
+                    (
+                        tile["rect"].x - self.rect.x,
+                        tile["rect"].y - self.rect.y
+                    )
+                ):
+                    self.pos.x += 1
+                    self.rect.centerx = self.pos.x
+                    self.has_hit = True
+
+                    self.velocity.x = 0 
+
+    
+
+    def update(self):
+
+        self.has_hit = False
+
+        if self.gravity_enabled == True:
+            self.velocity.y += GRAVITY
+
+        # horizontal movement
+        self.pos.x += self.velocity.x
+        self.rect.centerx = self.pos.x
+
+        self.collisions_x()
+
+        # vertical movement
+        self.pos.y += self.velocity.y
+        self.rect.centery = self.pos.y
+        
+        self.collisions_y()
+
+        if not self.has_hit:
+            self.in_air_rotate()
+
+        if paused == False:
+            self.rotate_image()
+
+        self.velocity.x *= 0.975
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -245,6 +329,11 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.centery <=0 or self.rect.centery >=800:
             self.kill()
 
+        for tile in tiles:
+            if self.rect.colliderect(tile["rect"]):
+                self.kill()
+
+
 
 player_group = pygame.sprite.GroupSingle()
 player_group.add(Player(x, y))
@@ -266,18 +355,41 @@ while True:
             if start_button_rect.collidepoint(event.pos) and game_state == "start_menu":
                 button_fx.play()
                 game_state = "playing"
+                if paused == True:
+                    paused = False
+                    player_group.sprite.pos = pygame.Vector2(600, 550)
+                    playing_state = "start"
+                    player_group.sprite.velocity = pygame.Vector2(0, 0)
+                    player_group.sprite.gravity_enabled = False
+
                 
 
             elif game_state == "playing":
-                gun_fired_fx.play()
-                playing_state = "in_proggress"
-                player_group.sprite.gravity_enabled = True
-                barrel = player_group.sprite.barrel_position()
+                if paused == False:
+                    gun_fired_fx.play()
+                    playing_state = "in_proggress"
+                    barrel = player_group.sprite.barrel_position()
 
-                bullet = Bullet(barrel, player_group.sprite.angle)
-                bullet_group.add(bullet)
+                
 
-                player_group.sprite.recoil(bullet.velocity)
+                    bullet = Bullet(barrel, player_group.sprite.angle)
+                    bullet_group.add(bullet)
+
+                    player_group.sprite.recoil(bullet.velocity)
+                    player_group.sprite.gravity_enabled = True
+
+                if pause_rect.collidepoint(event.pos):
+                    paused = True
+
+                if paused and home_rect.collidepoint(event.pos):
+                    game_state = "start_menu"
+
+                if cont_rect.collidepoint(event.pos):
+                    paused = False
+
+                
+
+
 
 
     if game_state == "start_menu":
@@ -291,33 +403,49 @@ while True:
     elif game_state == "playing":
         pygame.mixer.music.stop()
         screen.blit(bg_surface, (0,0))
-        screen.blit(floor_surface,floor_rect)
+        screen.blit(pause_surface, pause_rect)
         draw_map()
-        
-        
 
-        
-        
-
-        if playing_state == "start":
-            player_group.sprite.follow_mouse()
-            player_group.sprite.retical_line()
-            
-
-        #if playing_state == "in_proggress":
-            #player_group.sprite.in_air_rotate()
-
-
-
-        player_group.update()
-
-
-        bullet_group.update()
         bullet_group.draw(screen)
+
+        player_group.draw(screen)
+
+        for tile in tiles:
+            pygame.draw.rect(screen, (255, 0, 0), tile["rect"], 2)
+
+        if paused == False:
+            player_group.update()
+            player_group.sprite.get_tile_mask()
+
+
+            bullet_group.update()
+            bullet_group.draw(screen)
 
 
       
-        player_group.draw(screen)
+            player_group.draw(screen)
+        
+        
+
+        
+        
+
+            if playing_state == "start":
+                player_group.sprite.follow_mouse()
+                player_group.sprite.retical_line()
+
+            
+
+            if playing_state == "in_proggress":
+                player_group.sprite.stop_spin()
+
+
+        else:
+            
+            screen.blit(pause_menu, pause_menu_rect)
+            screen.blit(home_surface, home_rect)
+            screen.blit(cont_surface, cont_rect)
+                
 
     pygame.display.update()
     clock.tick(60)
