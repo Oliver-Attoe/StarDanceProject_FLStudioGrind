@@ -14,15 +14,23 @@ BOUNCE = 0.2
 game_state = "start_menu"
 playing_state = "start"
 paused = False
+level = "1"
+
+match level:
+    case "1":
+        map_file = "Maps/place_holder_map.tmx"
 
 
 
-start_screen_sound = pygame.mixer.music.load("Sounds/human_music.mp3")
-pygame.mixer.music.play(-1)
+
 button_fx = pygame.mixer.Sound("Sounds/button_pressed.mp3")
 gun_fired_fx = pygame.mixer.Sound("Sounds/bullet_fired.mp3")
+start_music = True
 
-tmx_data = load_pygame("Maps/place_holder_map.tmx")
+
+
+
+tmx_data = load_pygame(map_file)
 tiles = []
 
 def load_collision():
@@ -44,7 +52,7 @@ def load_collision():
 
                         mask = pygame.mask.Mask(rect.size, fill=True)
 
-                        tiles.append({"rect": rect, "mask": mask})
+                        tiles.append({"rect": rect, "mask": mask, "id": gid})
  
 def draw_map():
     for layer in tmx_data.visible_layers:
@@ -105,7 +113,7 @@ class Player(pygame.sprite.Sprite):
         
         self.velocity = pygame.Vector2(0, 0)
 
-        self.rot_speed = 5
+        self.rot_speed = 0
 
         
        
@@ -149,11 +157,12 @@ class Player(pygame.sprite.Sprite):
     def recoil(self,velocity):
         self.velocity -= velocity
 
+
     def in_air_rotate(self):
         self.angle += self.rot_speed
 
     def rotate_image(self):
-        self.image = pygame.transform.rotate(self.original_image, self.angle -180)
+        self.image = pygame.transform.rotate(self.original_image, self.angle - 180)
                 
         old_center = self.rect.center
         self.rect = self.image.get_rect(center=old_center)
@@ -267,11 +276,20 @@ class Player(pygame.sprite.Sprite):
 
                     self.velocity.x = 0 
 
+    def level_complete(self):
+        for tile in tiles:
+            if tile["id"] == 2:
+                if self.rect.colliderect(tile["rect"]):
+                    print("yres")
+                    
+
     
 
     def update(self):
 
         self.has_hit = False
+
+        self.barrel_position()
 
         if self.gravity_enabled == True:
             self.velocity.y += GRAVITY
@@ -280,7 +298,7 @@ class Player(pygame.sprite.Sprite):
         self.pos.x += self.velocity.x
         self.rect.centerx = self.pos.x
 
-        self.collisions_x()
+        #self.collisions_x()
 
         # vertical movement
         self.pos.y += self.velocity.y
@@ -295,6 +313,8 @@ class Player(pygame.sprite.Sprite):
             self.rotate_image()
 
         self.velocity.x *= 0.975
+
+        self.level_complete()
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -312,7 +332,7 @@ class Bullet(pygame.sprite.Sprite):
         if direction.length() > 0:
             direction = direction.normalize()
 
-        self.velocity = direction * 15
+        self.velocity = direction * 15 #was15
 
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
@@ -340,7 +360,10 @@ player_group.add(Player(x, y))
 
 bullet_group = pygame.sprite.Group()
 
-obstacle_group = pygame.sprite.Group()
+
+
+
+
 
 
 #Game loop
@@ -354,6 +377,8 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if start_button_rect.collidepoint(event.pos) and game_state == "start_menu":
                 button_fx.play()
+
+                
                 game_state = "playing"
                 if paused == True:
                     paused = False
@@ -383,6 +408,9 @@ while True:
 
                 if paused and home_rect.collidepoint(event.pos):
                     game_state = "start_menu"
+                    start_music = True
+                               
+
 
                 if cont_rect.collidepoint(event.pos):
                     paused = False
@@ -393,22 +421,29 @@ while True:
 
 
     if game_state == "start_menu":
+        
         screen.blit(start_surface, (0,0))
         screen.blit(start_button, start_button_rect)
         screen.blit(s_text, s_text_rect)
+        if start_music == True:
+            pygame.mixer.music.load("Sounds/human_music.mp3")
+            pygame.mixer.music.play(-1)
+            start_music = False
         
         
 
 
     elif game_state == "playing":
-        pygame.mixer.music.stop()
+
+        if start_music == False:
+            pygame.mixer.music.stop()
+
         screen.blit(bg_surface, (0,0))
-        screen.blit(pause_surface, pause_rect)
+        
         draw_map()
 
-        bullet_group.draw(screen)
+        screen.blit(pause_surface, pause_rect)
 
-        player_group.draw(screen)
 
         for tile in tiles:
             pygame.draw.rect(screen, (255, 0, 0), tile["rect"], 2)
