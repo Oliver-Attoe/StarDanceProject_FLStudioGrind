@@ -68,7 +68,7 @@ class Player(pygame.sprite.Sprite):
         self.original_image = pygame.image.load("Images/GUN.png").convert_alpha()
         self.image = self.original_image
         self.rect = self.image.get_rect(center=(x, y))
-        self.mask = pygame.mask.from_surface(self.image)
+    
         self.pos = pygame.Vector2(self.rect.center)
 
         self.gravity_enabled = False
@@ -81,6 +81,18 @@ class Player(pygame.sprite.Sprite):
 
         self.rot_speed = 0
 
+        self.local_polygon = [
+            pygame.Vector2(-23, 18),  # 1
+            pygame.Vector2(32, 18),   # 2
+            pygame.Vector2(28, 6),    # 3
+            pygame.Vector2(-5, 6),    # 4
+            pygame.Vector2(-16, -20),    # 5
+            pygame.Vector2(-32, -20),     # 6
+            pygame.Vector2(-20, 6),    # 7
+            pygame.Vector2(-29, 6),   # 8
+            ]
+
+
     def follow_mouse(self):
         self.m_pos = pygame.mouse.get_pos()
 
@@ -88,6 +100,31 @@ class Player(pygame.sprite.Sprite):
         y_dist = -(self.m_pos[1] - self.rect.centery)
 
         self.angle = math.degrees(math.atan2(y_dist, x_dist))
+
+    
+    def retical_line(self):
+    # line starts at barrel, ends at mouse location
+
+        barrel = self.barrel_position()
+        mouse = pygame.mouse.get_pos()
+
+        dx = mouse[0] - barrel[0]
+        dy = mouse[1] - barrel[1]
+
+        hypotenuse_length = math.hypot(dx, dy)
+
+        if hypotenuse_length == 0:
+            return
+
+        direction_x = dx / hypotenuse_length
+        direction_y = dy / hypotenuse_length
+
+        for c in range(0, int(hypotenuse_length), 15):
+            hyp_x = barrel[0] + direction_x * c
+            hyp_y = barrel[1] + direction_y * c
+
+            pygame.draw.circle(screen, "white", (int(hyp_x), int(hyp_y)), 3)
+            #pygame.draw.circle(screen, "red", barrel, 5)
 
     def barrel_position(self):
         rotated_offset = self.barrel_offset.rotate(-(self.angle))
@@ -108,125 +145,204 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def stop_spin(self):
-        if self.has_hit == True:
-            self.rot_speed = 0
-        else:
-            self.rot_speed = 10
+            self.rot_speed = 7
+   
+    def level_complete(self):
+            for tile in tiles:
+                if tile["id"] == 2:
+                    if self.rect.colliderect(tile["rect"]):
+                        print("LEVEL COMPLETE!!!")
 
-    def tile_collision(self):
-       
-        collisions = []
+    def get_global_polygon(self):
+        self.global_polygon = []
+
+        for point in self.local_polygon:
+            rotated = point.rotate(-self.angle)
+            self.global_polygon.append(rotated + self.pos)
+
+
+    def get_axes(self, global_polygon):
+
+        axes = []
+
+        for i in range(len(global_polygon)):
+
+            p1 = pygame.Vector2(global_polygon[i])
+            p2 = pygame.Vector2(global_polygon[(i + 1) % len(global_polygon)])
+
+            edge = p2 - p1
+
+            axis = pygame.Vector2(-edge.y, edge.x).normalize()
+
+            axes.append(axis)
+
+        return axes
+
+
+    def get_projections(self, axis, global_polygon):
+
+        projections = []
+
+        for point in global_polygon:
+            projections.append(pygame.Vector2(point).dot(axis))
+
+        return min(projections), max(projections)
+
+
+    def polygon_collision(self, poly1, poly2):
+
+        axes = self.get_axes(poly1) + self.get_axes(poly2)
+
+        smallest_overlap = float("inf")
+        smallest_axis = None
+
+        for axis in axes:
+
+            min1, max1 = self.get_projections(axis, poly1)
+            min2, max2 = self.get_projections(axis, poly2)
+
+            overlap = min(max1, max2) - max(min1, min2)
+
+            if overlap <= 0:
+                return False, None
+
+            if overlap < smallest_overlap:
+                smallest_overlap = overlap
+                smallest_axis = axis
+
+        return True, (smallest_axis, smallest_overlap)
+
+
+    def rect_to_poly(self, rect):
+
+        return [
+        pygame.Vector2(rect.topleft),
+        pygame.Vector2(rect.topright),
+        pygame.Vector2(rect.bottomright),
+        pygame.Vector2(rect.bottomleft)
+                ]
+
+
+    def test_collision(self):
 
         for tile in tiles:
 
-            if self.rect.colliderect(tile["rect"]):
+            tile_poly = self.rect_to_poly(tile["rect"])
+            
 
-                offset = (
-                    tile["rect"].x - self.rect.x,
-                    tile["rect"].y - self.rect.y
-                )
+            collided, response = self.polygon_collision(
+                self.global_polygon,
+                tile_poly
+            )
 
-                if self.mask.overlap(tile["mask"], offset):
-                    collisions.append(tile)
-                    
+            if collided:
+                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                pygame.draw.polygon(screen, "red", tile_poly, 2)
 
-        return collisions
+    
 
-    def collisions_y(self):
+    def collision_x(self):
 
-        for tile in self.tile_collision():
+        for tile in tiles:
+            if not self.rect.colliderect(tile["rect"]):
+                continue
+            tile_poly = self.rect_to_poly(tile["rect"])
 
-            if self.velocity.y > 0:  # falling
-                while self.mask.overlap(
-                    tile["mask"],
-                    (
-                        tile["rect"].x - self.rect.x,
-                        tile["rect"].y - self.rect.y
-                    )
-                ):
-                    self.pos.y -= 1
-                    self.rect.centery = self.pos.y
-                    self.has_hit = True
+            collided, response = self.polygon_collision(
+                self.global_polygon,
+                tile_poly
+            )
 
-                    self.velocity.y = 0
-                    
+            if collided:
 
-                    
+                axis, overlap = response
 
-            elif self.velocity.y < 0:  # hitting ceiling
-                while self.mask.overlap(
-                    tile["mask"],
-                    (
-                        tile["rect"].x - self.rect.x,
-                        tile["rect"].y - self.rect.y
-                    )
-                ):
-                    self.pos.y += 1
-                    self.rect.centery = self.pos.y
-                    self.has_hit = True
+                # only resolve horizontal collisions
+                if abs(axis.x) > abs(axis.y):
 
-                    self.velocity.y = 0
-
-    def collisions_x(self):
-        for tile in self.tile_collision():
-
-            if self.velocity.x > 0:  # moving right
-                while self.mask.overlap(
-                    tile["mask"],
-                    (
-                        tile["rect"].x - self.rect.x,
-                        tile["rect"].y - self.rect.y
-                    )
-                ):
-                    self.pos.x -= 1
-                    self.rect.centerx = self.pos.x
-                    self.has_hit = True
+                    if self.velocity.x > 0:
+                        self.pos.x -= overlap
+                    elif self.velocity.x < 0:
+                        self.pos.x += overlap
 
                     self.velocity.x = 0
 
-            elif self.velocity.x < 0:  # moving left
-                while self.mask.overlap(
-                    tile["mask"],
-                    (
-                        tile["rect"].x - self.rect.x,
-                        tile["rect"].y - self.rect.y
-                    )
-                ):
-                    self.pos.x += 1
-                    self.rect.centerx = self.pos.x
-                    self.has_hit = True
+                    self.rect.center = self.pos
+                    self.get_global_polygon()
 
-                    self.velocity.x = 0 
+
+    def collision_y(self):
+
+        for tile in tiles:
+            if not self.rect.colliderect(tile["rect"]):
+                continue
+
+            tile_poly = self.rect_to_poly(tile["rect"])
+
+            collided, response = self.polygon_collision(
+                self.global_polygon,
+                tile_poly
+            )
+
+            if collided:
+
+                axis, overlap = response
+
+                # only resolve vertical collisions
+                if abs(axis.y) > abs(axis.x):
+
+                    if self.velocity.y > 0:
+                        # falling onto floor
+                        self.pos.y -= overlap
+
+                    elif self.velocity.y < 0:
+                        # hitting ceiling
+                        self.pos.y += overlap
+
+
+                    self.velocity.y = 0
+
+                    self.rect.center = self.pos
+                    self.get_global_polygon()
 
     def update(self):
 
-        self.has_hit = False
+   
+        
+        self.get_global_polygon()
+
+        self.in_air_rotate()
+
+        self.rotate_image()
 
         self.barrel_position()
 
         if self.gravity_enabled == True:
             self.velocity.y += GRAVITY
 
-        # horizontal movement
-        self.pos.x += self.velocity.x
-        self.rect.centerx = self.pos.x
+        steps = max(1, int(abs(self.velocity.x)))
 
-        self.collisions_x()
+        for _ in range(steps):
+            self.pos.x += self.velocity.x / steps
+            self.rect.centerx = self.pos.x
+
+            self.get_global_polygon()
+            self.collision_x()
+
 
         # vertical movement
-        self.pos.y += self.velocity.y
-        self.rect.centery = self.pos.y
-        
-        self.collisions_y()
+        steps = max(1, int(abs(self.velocity.y)))
 
-        if not self.has_hit:
-            self.in_air_rotate()
+        for _ in range(steps):
+            self.pos.y += self.velocity.y / steps
+            self.rect.centery = self.pos.y
 
-
-        self.rotate_image()
+            self.get_global_polygon()
+            self.collision_y()
 
         self.velocity.x *= 0.975
-
+        self.level_complete()
+        self.test_collision()
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, barrel_offset,angle):
@@ -302,10 +418,14 @@ while True:
 
     if playing_state == "start":
         player_group.sprite.follow_mouse()
+        player_group.sprite.retical_line()
 
     else:
         player_group.sprite.stop_spin()
 
+
+
+    pygame.draw.polygon(screen, "red", player_group.sprite.global_polygon, 2)
     pygame.display.update()
     clock.tick(60)
     
