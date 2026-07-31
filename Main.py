@@ -15,6 +15,9 @@ game_state = "start_menu"
 playing_state = "start"
 paused = False
 level = "1"
+time = 0
+bullet_count = 0
+bullet_max = 4
 
 match level:
     case "1":
@@ -181,7 +184,7 @@ class Player(pygame.sprite.Sprite):
 
     def start_spin(self):
 
-        self.rot_speed = 10
+        self.rot_speed =10
 
     def get_global_polygon(self):
         self.global_polygon = []
@@ -319,6 +322,7 @@ class Player(pygame.sprite.Sprite):
             if axis.y < -0.7:
                 self.grounded = True
                 self.rot_speed = 0
+                self. velocity *= 0.96
 
             elif axis.y > 0.7:
                 self.celling_hit = True
@@ -330,7 +334,16 @@ class Player(pygame.sprite.Sprite):
                 if self.rect.colliderect(tile["rect"]):
                     print("yres")
 
-    #def restart(self):
+   
+
+        
+
+
+
+
+
+
+        
 
 
     
@@ -436,6 +449,7 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if start_button_rect.collidepoint(event.pos) and game_state == "start_menu":
                 button_fx.play()
+                
 
                 
                 game_state = "playing"
@@ -444,23 +458,21 @@ while True:
                     player_group.sprite.pos = pygame.Vector2(600, 550)
                     playing_state = "start"
                     player_group.sprite.velocity = pygame.Vector2(0, 0)
-                    player_group.sprite.gravity_enabled = False
+                    
 
                 
 
             elif game_state == "playing":
                 if paused == False:
-                    gun_fired_fx.play()
                     playing_state = "in_proggress"
                     barrel = player_group.sprite.barrel_position()
-
-                
-
-                    bullet = Bullet(barrel, player_group.sprite.angle)
-                    bullet_group.add(bullet)
-
-                    player_group.sprite.recoil(bullet.velocity)
-                    player_group.sprite.gravity_enabled = True
+                    if bullet_count < bullet_max:
+                        bullet = Bullet(barrel, player_group.sprite.angle)
+                        bullet_group.add(bullet)
+                        bullet_count += 1
+                        gun_fired_fx.play()
+                        player_group.sprite.recoil(bullet.velocity)
+                        player_group.sprite.gravity_enabled = True
 
                 if pause_rect.collidepoint(event.pos):
                     paused = True
@@ -473,6 +485,7 @@ while True:
 
                 if cont_rect.collidepoint(event.pos):
                     paused = False
+                    
 
                 
 
@@ -508,6 +521,7 @@ while True:
 
         if paused == False:
             player_group.update()
+            player_group.sprite.gravity_enabled = False
             
 
 
@@ -526,11 +540,30 @@ while True:
             if playing_state == "start":
                 player_group.sprite.follow_mouse()
                 player_group.sprite.retical_line()
+                player_group.sprite.rect.centerx = 600
+                player_group.sprite.rect.centery = 550
+                player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
+                player_group.sprite.rot_speed = 0
 
             
 
             if playing_state == "in_proggress":
                 player_group.sprite.start_spin()
+                r = pygame.key.get_pressed()
+                player_group.sprite.gravity_enabled = True
+                if r[pygame.K_r]:
+                    time += 1
+                    if time >= 120:
+                        playing_state = "start"
+                        time = 0
+
+
+
+        
+
+
+
+                
 
 
         else:
