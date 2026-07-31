@@ -166,8 +166,7 @@ class Player(pygame.sprite.Sprite):
         return pygame.Vector2(self.rect.center) + rotated_offset
     
     def recoil(self,velocity):
-        self.velocity -= velocity
-
+        self.velocity -= velocity * 1.5
 
     def in_air_rotate(self):
         self.angle += self.rot_speed
@@ -180,7 +179,7 @@ class Player(pygame.sprite.Sprite):
         
         self.mask = pygame.mask.from_surface(self.image)
 
-    def stop_spin(self):
+    def start_spin(self):
 
         self.rot_speed = 10
 
@@ -190,7 +189,6 @@ class Player(pygame.sprite.Sprite):
         for point in self.local_polygon:
             rotated = point.rotate(-self.angle)
             self.global_polygon.append(rotated + self.pos)
-
 
     def get_axes(self, global_polygon):
 
@@ -209,7 +207,6 @@ class Player(pygame.sprite.Sprite):
 
         return axes
 
-
     def get_projections(self, axis, global_polygon):
 
         projections = []
@@ -218,7 +215,6 @@ class Player(pygame.sprite.Sprite):
             projections.append(pygame.Vector2(point).dot(axis))
 
         return min(projections), max(projections)
-
 
     def polygon_collision(self, poly1, poly2):
 
@@ -241,8 +237,15 @@ class Player(pygame.sprite.Sprite):
                 smallest_overlap = overlap
                 smallest_axis = axis
 
-        return True, (smallest_axis, smallest_overlap)
+        center1 = sum(poly1, pygame.Vector2()) / len(poly1)
+        center2 = sum(poly2, pygame.Vector2()) / len(poly2)
 
+        direction = center2 - center1
+
+        if smallest_axis.dot(direction) < 0:
+            smallest_axis = -smallest_axis
+
+        return True, (smallest_axis, smallest_overlap)
 
     def rect_to_poly(self, rect):
 
@@ -252,7 +255,6 @@ class Player(pygame.sprite.Sprite):
         pygame.Vector2(rect.bottomright),
         pygame.Vector2(rect.bottomleft)
                 ]
-
 
     def test_collision(self):
 
@@ -267,44 +269,15 @@ class Player(pygame.sprite.Sprite):
             )
 
             if collided:
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                 pygame.draw.polygon(screen, "red", tile_poly, 2)
 
-    
+    def resolve_collisions(self):
 
-    def collision_x(self):
-
-        for tile in tiles:
-            if not self.rect.colliderect(tile["rect"]):
-                continue
-            tile_poly = self.rect_to_poly(tile["rect"])
-
-            collided, response = self.polygon_collision(
-                self.global_polygon,
-                tile_poly
-            )
-
-            if collided:
-
-                axis, overlap = response
-
-                # only resolve horizontal collisions
-                if abs(axis.x) > abs(axis.y):
-
-                    if self.velocity.x > 0:
-                        self.pos.x -= overlap
-                    elif self.velocity.x < 0:
-                        self.pos.x += overlap
-
-                    self.velocity.x = 0
-
-                    self.rect.center = self.pos
-                    self.get_global_polygon()
-
-
-    def collision_y(self):
+        self.grounded = False
+        self.celling_hit = False
 
         for tile in tiles:
+
             if not self.rect.colliderect(tile["rect"]):
                 continue
 
@@ -315,42 +288,59 @@ class Player(pygame.sprite.Sprite):
                 tile_poly
             )
 
-            if collided:
+            if not collided:
+                continue
 
-                axis, overlap = response
+            axis, overlap = response
 
-                # only resolve vertical collisions
-                if abs(axis.y) > abs(axis.x):
+            # Move the axis so it always points from the tile to the player
+            tile_center = pygame.Vector2(tile["rect"].center)
+            direction = self.pos - tile_center
 
-                    if self.velocity.y > 0:
-                        # falling onto floor
-                        self.pos.y -= overlap
+            if axis.dot(direction) < 0:
+                axis = -axis
 
-                    elif self.velocity.y < 0:
-                        # hitting ceiling
-                        self.pos.y += overlap
+            # Minimum Translation Vector
+            mtv = axis * overlap
 
+            # Push player out of tile
+            self.pos += mtv
 
-                    self.velocity.y = 0
+            self.rect.center = self.pos
+            self.get_global_polygon()
 
-                    self.rect.center = self.pos
-                    self.get_global_polygon()
+            # Remove velocity into the surface
+            vn = self.velocity.dot(axis)
+
+            if vn < 0:
+                self.velocity -= axis * vn
+
+            # Ground / ceiling
+            if axis.y < -0.7:
+                self.grounded = True
+                self.rot_speed = 0
+
+            elif axis.y > 0.7:
+                self.celling_hit = True
+                self.rot_speed = 0
 
     def level_complete(self):
         for tile in tiles:
             if tile["id"] == 2:
                 if self.rect.colliderect(tile["rect"]):
                     print("yres")
-                    
+
+    #def restart(self):
+
 
     
 
     def update(self):
 
-
-
         self.barrel_position()
 
+        self.celling_hit = False
+        self.grounded = False
         if self.gravity_enabled == True:
             self.velocity.y += GRAVITY
 
@@ -359,9 +349,8 @@ class Player(pygame.sprite.Sprite):
         for _ in range(steps):
             self.pos.x += self.velocity.x / steps
             self.rect.centerx = self.pos.x
-
             self.get_global_polygon()
-            self.collision_x()
+            self.resolve_collisions()
 
 
         # vertical movement
@@ -370,19 +359,21 @@ class Player(pygame.sprite.Sprite):
         for _ in range(steps):
             self.pos.y += self.velocity.y / steps
             self.rect.centery = self.pos.y
-
             self.get_global_polygon()
-            self.collision_y()
+            self.resolve_collisions()
 
-
+        self.get_global_polygon()
         self.in_air_rotate()
 
         if paused == False:
             self.rotate_image()
 
-        self.velocity.x *= 0.975
-
+        self.velocity.x *= 0.985
+        self.test_collision()
         self.level_complete()
+        
+
+        
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -400,7 +391,7 @@ class Bullet(pygame.sprite.Sprite):
         if direction.length() > 0:
             direction = direction.normalize()
 
-        self.velocity = direction * 15 #was15
+        self.velocity = direction * 19 #was15
 
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
@@ -442,7 +433,7 @@ while True:
             pygame.quit()
             exit()
     
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if start_button_rect.collidepoint(event.pos) and game_state == "start_menu":
                 button_fx.play()
 
@@ -539,7 +530,7 @@ while True:
             
 
             if playing_state == "in_proggress":
-                player_group.sprite.stop_spin()
+                player_group.sprite.start_spin()
 
 
         else:
@@ -548,7 +539,7 @@ while True:
             screen.blit(home_surface, home_rect)
             screen.blit(cont_surface, cont_rect)
                 
-
+    
     pygame.display.update()
     clock.tick(60)
     
