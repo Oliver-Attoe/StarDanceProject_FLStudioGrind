@@ -10,11 +10,10 @@ screen = pygame.display.set_mode((1200, 800))
 clock = pygame.time.Clock()
 
 GRAVITY = 0.5
-BOUNCE = 0.2
 game_state = "start_menu"
 playing_state = "start"
 paused = False
-level = "1"
+level = "2"
 time = 0
 bullet_count = 0
 bullet_max = 4
@@ -22,7 +21,15 @@ bullet_max = 4
 match level:
     case "1":
         map_file = "Maps/place_holder_map.tmx"
+        start_x = 600
+        start_y = 550
+        bullet_count = 0
+        bullet_max = 4
 
+    case "2":
+        map_file = "Maps/Level_2_map.tmx"
+        start_x = 1072
+        start_y = 100
 
 
 
@@ -56,6 +63,7 @@ def load_collision():
                         mask = pygame.mask.Mask(rect.size, fill=True)
 
                         tiles.append({"rect": rect, "mask": mask, "id": gid})
+                        print("GID:", gid)      
  
 def draw_map():
     for layer in tmx_data.visible_layers:
@@ -91,8 +99,6 @@ home_rect = home_surface.get_rect(center = (600, 400))
 cont_surface = pygame.image.load("Images/continue_button.png")
 cont_rect = cont_surface.get_rect(center = (700, 400))
 
-x = 600
-y = 550
 
 
 
@@ -100,11 +106,11 @@ y = 550
 
 class Player(pygame.sprite.Sprite):
 
-    def __init__(self, x, y):
+    def __init__(self, start_x, start_y):
         super().__init__()
         self.original_image = pygame.image.load("Images/GUN.png").convert_alpha()
         self.image = self.original_image
-        self.rect = self.image.get_rect(center=(x, y))
+        self.rect = self.image.get_rect(center=(start_x, start_y))
         
         self.pos = pygame.Vector2(self.rect.center)
 
@@ -330,11 +336,17 @@ class Player(pygame.sprite.Sprite):
 
     def level_complete(self):
         for tile in tiles:
-            if tile["id"] == 2:
+            if tile["id"] == 3:
                 if self.rect.colliderect(tile["rect"]):
                     print("yres")
+                else:
+                    pass
 
-   
+    def kill_block(self):
+        for tile in tiles:
+            if tile["id"] == 2:
+                if self.rect.colliderect(tile["rect"]):
+                    print("killed")
 
         
 
@@ -384,6 +396,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity.x *= 0.985
         self.test_collision()
         self.level_complete()
+        self.kill_block()
         
 
         
@@ -428,7 +441,7 @@ class Bullet(pygame.sprite.Sprite):
 
 
 player_group = pygame.sprite.GroupSingle()
-player_group.add(Player(x, y))
+player_group.add(Player(start_x, start_y))
 
 bullet_group = pygame.sprite.Group()
 
@@ -455,7 +468,7 @@ while True:
                 game_state = "playing"
                 if paused == True:
                     paused = False
-                    player_group.sprite.pos = pygame.Vector2(600, 550)
+                    player_group.sprite.pos = pygame.Vector2(start_x, start_y)
                     playing_state = "start"
                     player_group.sprite.velocity = pygame.Vector2(0, 0)
                     
@@ -540,8 +553,8 @@ while True:
             if playing_state == "start":
                 player_group.sprite.follow_mouse()
                 player_group.sprite.retical_line()
-                player_group.sprite.rect.centerx = 600
-                player_group.sprite.rect.centery = 550
+                player_group.sprite.rect.centerx = start_x
+                player_group.sprite.rect.centery = start_y
                 player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
                 player_group.sprite.rot_speed = 0
 
@@ -549,6 +562,7 @@ while True:
 
             if playing_state == "in_proggress":
                 player_group.sprite.start_spin()
+
                 r = pygame.key.get_pressed()
                 player_group.sprite.gravity_enabled = True
                 if r[pygame.K_r]:
@@ -556,6 +570,8 @@ while True:
                     if time >= 120:
                         playing_state = "start"
                         time = 0
+                        player_group.sprite.rect.centerx = start_x
+                        player_group.sprite.rect.centery = start_y
 
 
 
@@ -571,8 +587,9 @@ while True:
             screen.blit(pause_menu, pause_menu_rect)
             screen.blit(home_surface, home_rect)
             screen.blit(cont_surface, cont_rect)
-                
-    
+
+      
+    pygame.draw.rect(screen, "red", player_group.sprite.rect, 2)
     pygame.display.update()
     clock.tick(60)
     
