@@ -7,7 +7,10 @@
  <tile id="1">
   <image source="../Images/Tiles/Blue.png" width="16" height="16"/>
  </tile>
- <tile id="2">
+ <tile id="2" type="Win">
+  <properties>
+   <property name="Win" type="bool" value="true"/>
+  </properties>
   <image source="../Images/Tiles/finish.png" width="16" height="16"/>
  </tile>
  <tile id="3">
@@ -19,7 +22,7 @@
  <tile id="5">
   <image source="../Images/Tiles/purple.png" width="16" height="16"/>
  </tile>
- <tile id="6">
+ <tile id="6" type="Kill">
   <image source="../Images/Tiles/Red.png" width="16" height="16"/>
  </tile>
  <tile id="7">

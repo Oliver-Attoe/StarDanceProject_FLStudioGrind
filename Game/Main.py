@@ -21,16 +21,21 @@ map_file, start_x, start_y, bullet_count, bullet_max = Settings.level_load()
 
 
 
+
+
 tmx_data = load_pygame(map_file)
 tiles = []
 
 def load_collision():
+
+    tiles.clear()
     for layer in tmx_data.visible_layers:
         if isinstance(layer, pytmx.TiledTileLayer):
 
             for x, y, gid in layer:
 
                 tile = tmx_data.get_tile_image_by_gid(gid)
+                properties = tmx_data.get_tile_properties_by_gid(gid)
 
                 if tile:
                     
@@ -43,7 +48,7 @@ def load_collision():
 
                         mask = pygame.mask.Mask(rect.size, fill=True)
 
-                        tiles.append({"rect": rect, "mask": mask, "id": gid})
+                        tiles.append({"rect": rect, "mask": mask, "property": properties})
                             
  
 def draw_map():
@@ -59,8 +64,17 @@ def draw_map():
                          y * tmx_data.tileheight)
                     )
 
-load_collision()
+def load_level(map_file):
+    global tmx_data
 
+    tmx_data = load_pygame(map_file)
+
+    tiles.clear()
+    load_collision()
+
+
+
+load_level(map_file)
 
 class Player(pygame.sprite.Sprite):
 
@@ -294,15 +308,26 @@ class Player(pygame.sprite.Sprite):
 
     def level_complete(self):
         for tile in tiles:
-            if tile["id"] == 3:
-                if self.rect.colliderect(tile["rect"]):
-                    print("yres")
-                else:
-                    pass
+            tile_class = tile["property"].get("type")
+            if tile_class == "Win":
+
+
+                tile_poly = self.rect_to_poly(tile["rect"])
+
+                collided, response = self.polygon_collision(
+                    self.global_polygon,
+                    tile_poly
+                )
+
+                if collided:
+                    print("Win")
+
 
     def kill_block(self):
         for tile in tiles:
-            if tile["id"] == 2:
+            tile_class = tile["property"].get("type")
+            if tile_class == "Kill":
+
 
                 tile_poly = self.rect_to_poly(tile["rect"])
 
@@ -361,7 +386,7 @@ class Player(pygame.sprite.Sprite):
 
         self.velocity.x *= 0.985
         self.test_collision()
-        self.level_complete()
+        #self.level_complete()
         self.kill_block()
         
 
@@ -478,7 +503,8 @@ while True:
                         
 
                         map_file, start_x, start_y, bullet_count, bullet_max = Settings.level_load()
-                        tmx_data = load_pygame(map_file)
+
+                        load_level(map_file)
                         
 
                         Settings.selecting_level = False
