@@ -105,7 +105,10 @@ class Player(pygame.sprite.Sprite):
             pygame.Vector2(-32, -20),     # 6
             pygame.Vector2(-20, 6),    # 7
             pygame.Vector2(-29, 6),   # 8
-            ]        
+            ]
+
+        self.global_polygon = []
+        self.get_global_polygon()
 
         
        
@@ -153,12 +156,15 @@ class Player(pygame.sprite.Sprite):
         self.angle += self.rot_speed
 
     def rotate_image(self):
-        self.image = pygame.transform.rotate(self.original_image, self.angle - 180)
-                
+        self.image = pygame.transform.rotate(
+        self.original_image,
+        self.angle - 180
+        )
+
         old_center = self.rect.center
         self.rect = self.image.get_rect(center=old_center)
-        
-        self.mask = pygame.mask.from_surface(self.image)
+
+        self.get_global_polygon()
 
     def start_spin(self):
 
@@ -272,6 +278,11 @@ class Player(pygame.sprite.Sprite):
             if not collided:
                 continue
 
+            if tile["property"].get("type") == "Kill":
+                crash_fx.play()
+                Settings.game_state = "lost"
+                return
+
             axis, overlap = response
 
             # Move the axis so it always points from the tile to the player
@@ -325,19 +336,22 @@ class Player(pygame.sprite.Sprite):
 
     def kill_block(self):
         for tile in tiles:
-            tile_class = tile["property"].get("type")
-            if tile_class == "Kill":
 
 
-                tile_poly = self.rect_to_poly(tile["rect"])
+            if tile["property"].get("type") != "Kill":
+                continue
 
-                collided, response = self.polygon_collision(
-                    self.global_polygon,
-                    tile_poly
-                )
+            tile_poly = self.rect_to_poly(tile["rect"])
 
-                if collided:
-                    print("killed")
+            collided, response = self.polygon_collision(
+                self.global_polygon,
+                tile_poly
+            )
+
+            if collided:
+                crash_fx.play()
+                print("AAAAAAAAA")
+                Settings.game_state = "lost"
 
         
 
@@ -352,7 +366,7 @@ class Player(pygame.sprite.Sprite):
     
 
     def update(self):
-
+        
         self.barrel_position()
 
         self.celling_hit = False
@@ -367,6 +381,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.centerx = self.pos.x
             self.get_global_polygon()
             self.resolve_collisions()
+           
 
 
         # vertical movement
@@ -378,17 +393,25 @@ class Player(pygame.sprite.Sprite):
             self.get_global_polygon()
             self.resolve_collisions()
 
-        self.get_global_polygon()
+
+        
         self.in_air_rotate()
+        
+        self.get_global_polygon()
 
         if Settings.paused == False:
             self.rotate_image()
+
+        
 
         self.velocity.x *= 0.985
         self.test_collision()
         #self.level_complete()
         self.kill_block()
+       
         
+
+
 
         
 
@@ -516,6 +539,21 @@ while True:
                             Settings.playing_state = "start"
                             Settings.paused = False
 
+
+                case "lost":
+                    if restart_button_rect.collidepoint(event.pos):
+                        Settings.playing_state = "start"
+                        Settings.game_state = "playing"
+
+                        player_group.sprite.pos = pygame.Vector2(start_x, start_y)
+                        player_group.sprite.velocity = pygame.Vector2(0, 0)
+                        player_group.sprite.gravity_enabled = False
+
+                    continue
+
+
+                        
+
 ###############################################
 
 
@@ -538,7 +576,7 @@ while True:
 
     match Settings.game_state:
         case "start_menu":
-        
+            Settings.paused = False
             screen.blit(start_surface, (0,0))
             screen.blit(start_button, start_button_rect)
             screen.blit(s_text, s_text_rect)
@@ -555,6 +593,11 @@ while True:
             if start_music == False:
                 pygame.mixer.music.stop()
 
+            if Settings.paused == False:
+                player_group.update()
+                player_group.sprite.gravity_enabled = False
+                bullet_group.update()
+
             screen.blit(bg_surface, (0,0))
         
         
@@ -567,13 +610,7 @@ while True:
 
 
 
-            if Settings.paused == False:
-                player_group.update()
-                player_group.sprite.gravity_enabled = False
-            
 
-
-                bullet_group.update()
 
 
 
@@ -584,64 +621,65 @@ while True:
 
         
         
-                match Settings.playing_state:
-                    case "start":
-                        player_group.sprite.rot_speed = 0
-                        player_group.sprite.follow_mouse()
-                        player_group.sprite.retical_line()
-                        player_group.sprite.rect.centerx = start_x
-                        player_group.sprite.rect.centery = start_y
-                        player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
-                        player_group.sprite.velocity =  pygame.Vector2(0,0)
+            match Settings.playing_state:
+                case "start":
+                    player_group.sprite.rot_speed = 0
+                    player_group.sprite.follow_mouse()
+                    player_group.sprite.retical_line()
+                    player_group.sprite.rect.centerx = start_x
+                    player_group.sprite.rect.centery = start_y
+                    player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
+                    player_group.sprite.velocity =  pygame.Vector2(0,0)
                 
-                        bullet_count = 0
+                    bullet_count = 0
 
             
 
-                    case "in_proggress":
-                        player_group.sprite.start_spin()
+                case "in_proggress":
+                    player_group.sprite.start_spin()
 
-                        r = pygame.key.get_pressed()
-                        player_group.sprite.gravity_enabled = True
-                        if r[pygame.K_r]:
-                            Settings.time += 1
-                            if Settings.time >= 120:
-                                Settings.playing_state = "start"
-                                Settings.time = 0
-                                player_group.sprite.rect.centerx = start_x
-                                player_group.sprite.rect.centery = start_y
+                    r = pygame.key.get_pressed()
+                    player_group.sprite.gravity_enabled = True
+                    if r[pygame.K_r]:
+                        Settings.time += 1
+                        if Settings.time >= 120:
+                            Settings.playing_state = "start"
+                            Settings.time = 0
 
 
 
-        ############################################################
+        case "lost":
+            screen.blit(loss_screen, loss_screen_rect)
+            screen.blit(restart_button, restart_button_rect)
 
-
-
-                
-
-
-            else:
-            
-                screen.blit(pause_menu, pause_menu_rect)
-                screen.blit(home_surface, home_rect)
-                screen.blit(cont_surface, cont_rect)
-                screen.blit(level_button, level_button_rect)
-
-
-
+        
 
         case "selecting_level":
-
+            Settings.paused = False
             screen.blit(level_select_BG, (0,0))
             level_selection.draw(screen)
+
+                
+
+
+    if Settings.paused:
+            
+        screen.blit(pause_menu, pause_menu_rect)
+        screen.blit(home_surface, home_rect)
+        screen.blit(cont_surface, cont_rect)
+        screen.blit(level_button, level_button_rect)
+
+
+
+
+
          
 
 
 
     
-    #pygame.draw.rect(screen, "red", level_button_rect2, 2)
-    #pygame.draw.rect(screen, "red", level_button_rect, 2)
-    #pygame.draw.rect(screen, "red", player_group.sprite.rect, 2)
+    pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
+    pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
     pygame.display.update()
     clock.tick(60)
     

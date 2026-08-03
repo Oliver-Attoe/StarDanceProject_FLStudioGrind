@@ -20,16 +20,27 @@ bg_surface = pygame.image.load("Images/BG.png").convert()
 
 pause_surface = pygame.image.load("Images/Pause.png").convert()
 pause_rect = pause_surface.get_rect(topleft = (1140, 0))
+
 pause_menu = pygame.image.load("Images/Pause_menu.png")
 pause_menu_rect = pause_menu.get_rect(center = (600, 400))
+
 home_surface = pygame.image.load("Images/Home_button.png")
 home_rect = home_surface.get_rect(center = (600, 400))
+
 cont_surface = pygame.image.load("Images/continue_button.png")
 cont_rect = cont_surface.get_rect(center = (700, 400))
+
 level_button = pygame.image.load("Images/Level_button_pause.png")
 level_button_rect = level_button.get_rect(center = (500, 400))
 level_button_rect2 = level_button.get_rect(topleft = (10, 745) )
+
 level_select_BG = pygame.image.load("Images/Level_select_BG.png")
+
+loss_screen = pygame.image.load("Images/Loss_screen.png")
+loss_screen_rect = loss_screen.get_rect(center = (600, 400))
+
+restart_button = pygame.image.load("Images/Restart_button.png")
+restart_button_rect = restart_button.get_rect(center = (600, 400))
 
 
 class Level_select(pygame.sprite.Sprite):
