@@ -451,67 +451,72 @@ while True:
             exit()
     
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if start_button_rect.collidepoint(event.pos) and Settings.game_state == "start_menu":
-                button_fx.play()
+            match Settings.game_state:
+                case "start_menu":
+                    if start_button_rect.collidepoint(event.pos):
+                        button_fx.play()
                 
-                Settings.game_state = "playing"
-                if Settings.paused == True:
-                    Settings.paused = False
-                    player_group.sprite.pos = pygame.Vector2(start_x, start_y)
-                    Settings.playing_state = "start"
-                    player_group.sprite.velocity = pygame.Vector2(0, 0)
-                    
-            
-                
-
-            elif Settings.game_state == "playing":
-                if Settings.paused == False:
-                    Settings.playing_state = "in_proggress"
-                    barrel = player_group.sprite.barrel_position()
-                    if bullet_count < bullet_max:
-                        bullet = Bullet(barrel, player_group.sprite.angle)
-                        bullet_group.add(bullet)
-                        bullet_count += 1
-                        gun_fired_fx.play()
-                        player_group.sprite.recoil(bullet.velocity)
-                        player_group.sprite.gravity_enabled = True
-
-                if pause_rect.collidepoint(event.pos):
-                    Settings.paused = True
-
-                if Settings.paused and home_rect.collidepoint(event.pos):
-                    Settings.game_state = "start_menu"
-                    start_music = True
-                               
-                if cont_rect.collidepoint(event.pos):
-                    Settings.paused = False
-
-            if level_button_rect2.collidepoint(event.pos):
-                Settings.selecting_level = True
-
-            elif level_button_rect.collidepoint(event.pos):
-                Settings.selecting_level = True
-
-            elif Settings.selecting_level == True:
-
-                for button in level_selection:
-
-                    if button.rect.collidepoint(event.pos):
-
-                        current_level = button.level
-                        Settings.player_level = current_level
-                        
-
-                        map_file, start_x, start_y, bullet_count, bullet_max = Settings.level_load()
-
-                        load_level(map_file)
-                        
-
-                        Settings.selecting_level = False
                         Settings.game_state = "playing"
                         Settings.playing_state = "start"
+                
+
+                    if Settings.paused == True:
+                        Settings.paused = False
+                        player_group.sprite.pos = pygame.Vector2(start_x, start_y)
+                        Settings.playing_state = "start"
+                        player_group.sprite.velocity = pygame.Vector2(0, 0)
+
+
+                    if level_button_rect2.collidepoint(event.pos):
+                        Settings.game_state = "selecting_level"
+                    
+            
+                case"playing":
+                    if Settings.paused == False:
+                        Settings.playing_state = "in_proggress"
+                        barrel = player_group.sprite.barrel_position()
+                        if bullet_count < bullet_max:
+                            bullet = Bullet(barrel, player_group.sprite.angle)
+                            bullet_group.add(bullet)
+                            bullet_count += 1
+                            gun_fired_fx.play()
+                            player_group.sprite.recoil(bullet.velocity)
+                            player_group.sprite.gravity_enabled = True
+
+                    if pause_rect.collidepoint(event.pos):
+                        Settings.paused = True
+
+                    if Settings.paused and home_rect.collidepoint(event.pos):
+                        Settings.game_state = "start_menu"
+                        start_music = True
+                               
+                    if cont_rect.collidepoint(event.pos):
                         Settings.paused = False
 
+                    if level_button_rect.collidepoint(event.pos):
+                        Settings.game_state = "selecting_level"
+
+
+                case "selecting_level":
+                    for button in level_selection:
+
+                        if button.rect.collidepoint(event.pos):
+
+                            current_level = button.level
+                            Settings.player_level = current_level
+                        
+
+                            map_file, start_x, start_y, bullet_count, bullet_max = Settings.level_load()
+
+                            load_level(map_file)
+                        
+
+                            
+                            Settings.game_state = "playing"
+                            Settings.playing_state = "start"
+                            Settings.paused = False
+
+###############################################
 
 
 
@@ -531,44 +536,44 @@ while True:
 
 
 
-
-    if Settings.game_state == "start_menu":
+    match Settings.game_state:
+        case "start_menu":
         
-        screen.blit(start_surface, (0,0))
-        screen.blit(start_button, start_button_rect)
-        screen.blit(s_text, s_text_rect)
-        screen.blit(level_button, level_button_rect2)
-        if start_music == True:
-            play_music()
-            start_music = False
+            screen.blit(start_surface, (0,0))
+            screen.blit(start_button, start_button_rect)
+            screen.blit(s_text, s_text_rect)
+            screen.blit(level_button, level_button_rect2)
+            if start_music == True:
+                play_music()
+                start_music = False
         
-     
+     ###
 
 
-    elif Settings.game_state == "playing":
+        case "playing":
 
-        if start_music == False:
-            pygame.mixer.music.stop()
+            if start_music == False:
+                pygame.mixer.music.stop()
 
-        screen.blit(bg_surface, (0,0))
+            screen.blit(bg_surface, (0,0))
         
         
-        draw_map()
+            draw_map()
 
-        screen.blit(pause_surface, pause_rect)
-        bullet_group.draw(screen)
-        player_group.draw(screen)
-
-
+            screen.blit(pause_surface, pause_rect)
+            bullet_group.draw(screen)
+            player_group.draw(screen)
 
 
-        if Settings.paused == False:
-            player_group.update()
-            player_group.sprite.gravity_enabled = False
+
+
+            if Settings.paused == False:
+                player_group.update()
+                player_group.sprite.gravity_enabled = False
             
 
 
-            bullet_group.update()
+                bullet_group.update()
 
 
 
@@ -579,65 +584,63 @@ while True:
 
         
         
-
-            if Settings.playing_state == "start":
-                player_group.sprite.rot_speed = 0
-                player_group.sprite.follow_mouse()
-                player_group.sprite.retical_line()
-                player_group.sprite.rect.centerx = start_x
-                player_group.sprite.rect.centery = start_y
-                player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
-                player_group.sprite.velocity =  pygame.Vector2(0,0)
-                
-                bullet_count = 0
-
-            
-
-            if Settings.playing_state == "in_proggress":
-                player_group.sprite.start_spin()
-
-                r = pygame.key.get_pressed()
-                player_group.sprite.gravity_enabled = True
-                if r[pygame.K_r]:
-                    Settings.time += 1
-                    if Settings.time >= 120:
-                        Settings.playing_state = "start"
-                        Settings.time = 0
+                match Settings.playing_state:
+                    case "start":
+                        player_group.sprite.rot_speed = 0
+                        player_group.sprite.follow_mouse()
+                        player_group.sprite.retical_line()
                         player_group.sprite.rect.centerx = start_x
                         player_group.sprite.rect.centery = start_y
+                        player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
+                        player_group.sprite.velocity =  pygame.Vector2(0,0)
+                
+                        bullet_count = 0
+
+            
+
+                    case "in_proggress":
+                        player_group.sprite.start_spin()
+
+                        r = pygame.key.get_pressed()
+                        player_group.sprite.gravity_enabled = True
+                        if r[pygame.K_r]:
+                            Settings.time += 1
+                            if Settings.time >= 120:
+                                Settings.playing_state = "start"
+                                Settings.time = 0
+                                player_group.sprite.rect.centerx = start_x
+                                player_group.sprite.rect.centery = start_y
 
 
 
-        
+        ############################################################
 
 
 
                 
 
 
-        else:
+            else:
             
-            screen.blit(pause_menu, pause_menu_rect)
-            screen.blit(home_surface, home_rect)
-            screen.blit(cont_surface, cont_rect)
-            screen.blit(level_button, level_button_rect)
+                screen.blit(pause_menu, pause_menu_rect)
+                screen.blit(home_surface, home_rect)
+                screen.blit(cont_surface, cont_rect)
+                screen.blit(level_button, level_button_rect)
 
 
 
 
-    if Settings.selecting_level == True:
-        if Settings.paused == True:
+        case "selecting_level":
+
             screen.blit(level_select_BG, (0,0))
             level_selection.draw(screen)
-        elif Settings.game_state == "start_menu":
-            screen.blit(level_select_BG, (0,0))
-            level_selection.draw(screen)           
+         
 
 
 
     
     #pygame.draw.rect(screen, "red", level_button_rect2, 2)
-    pygame.draw.rect(screen, "red", level_button_rect, 2)
+    #pygame.draw.rect(screen, "red", level_button_rect, 2)
     #pygame.draw.rect(screen, "red", player_group.sprite.rect, 2)
     pygame.display.update()
     clock.tick(60)

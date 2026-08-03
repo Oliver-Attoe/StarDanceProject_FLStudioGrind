@@ -5,7 +5,7 @@ paused = False
 player_level = 1
 levels = 20
 time = 0
-selecting_level = False
+
 
 
 
