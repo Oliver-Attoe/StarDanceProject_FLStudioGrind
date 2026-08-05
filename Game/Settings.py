@@ -12,19 +12,32 @@ time = 0
 def level_load():
     match player_level:
         case 1:
-            map_file = "Maps/place_holder_map.tmx"
+            map_file = "Maps/Level_1_map.tmx"
             start_x = 600
             start_y = 550
             bullet_count = 0
             bullet_max = 4
+            goal_x = 245
+            goal_y = 663
             
 
         case 2:
             map_file = "Maps/Level_2_map.tmx"
             start_x = 1072
-            start_y = 100
+            start_y = 550
             bullet_count = 0
-            bullet_max = 6
+            bullet_max = 4
+            goal_x = 191
+            goal_y = 681
+
+        #case 3:
+            #map_file = "Maps/Level_3_map.tmx"
+            #start_x = 200
+            #start_y = 100
+           # bullet_count = 0
+           # bullet_max = 5
+            #goal_x = 191
+            #goal_y = 681
             
     
-    return map_file, start_x, start_y, bullet_count, bullet_max
+    return map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y

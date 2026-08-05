@@ -5,6 +5,7 @@ from Settings import levels
 
 
 
+
 start_surface = pygame.image.load("Images/Start_screen.png").convert()
 s_text_test = pygame.font.Font("Images/SpyAgencyBoldItalic-BLLnV.otf", 60)
 s_text = s_text_test.render ("Barrel Roll Bullet", True, "Black")
@@ -42,6 +43,12 @@ loss_screen_rect = loss_screen.get_rect(center = (600, 400))
 restart_button = pygame.image.load("Images/Restart_button.png")
 restart_button_rect = restart_button.get_rect(center = (600, 400))
 
+win_screen = pygame.image.load("Images/Win_screen.png")
+win_screen_rect = win_screen.get_rect(center = (600,400))
+
+next_level = pygame.image.load("Images/Next_level.png")
+next_level_rect = next_level.get_rect(center = (600,400))
+
 
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
@@ -74,6 +81,29 @@ def button_generation(levels):
                 y += 120
 
         return level_group
+
+
+def create_star(goal_x, goal_y):
+    star = pygame.image.load("Images/star2.png").convert_alpha()
+    star_rect = star.get_rect(center=(goal_x, goal_y))
+
+    local_star_polygon = [
+        pygame.Vector2(0, -55),  # 1
+        pygame.Vector2(55, -10),   # 2
+        pygame.Vector2(35, 55),    # 4
+        pygame.Vector2(-35, 55),    # 5
+        pygame.Vector2(-55, -10),
+    ]
+
+    star_polygon = []
+    centre = pygame.Vector2(star_rect.center)
+
+    for point in local_star_polygon:
+        star_polygon.append(centre + point)
+
+
+
+    return star, star_rect,star_polygon
 
 
 

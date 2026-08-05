@@ -8,20 +8,13 @@ from UI import *
 from SOUNDS import *
 
 
-
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
 clock = pygame.time.Clock()
 
 level_selection = button_generation(Settings.levels)
-map_file, start_x, start_y, bullet_count, bullet_max = Settings.level_load()
-
-
-
-
-
-
-
+map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y = Settings.level_load()
+star, star_rect, star_polygon = create_star(goal_x, goal_y)
 
 tmx_data = load_pygame(map_file)
 tiles = []
@@ -110,8 +103,6 @@ class Player(pygame.sprite.Sprite):
         self.global_polygon = []
         self.get_global_polygon()
 
-        
-       
 
     def follow_mouse(self):
         self.m_pos = pygame.mouse.get_pos()
@@ -278,9 +269,15 @@ class Player(pygame.sprite.Sprite):
             if not collided:
                 continue
 
+            #kill block function moved here
             if tile["property"].get("type") == "Kill":
                 crash_fx.play()
                 Settings.game_state = "lost"
+                return
+
+            if tile["property"].get("type") == "Win":
+                win_fx.play()
+                Settings.game_state = "has_won"
                 return
 
             axis, overlap = response
@@ -318,52 +315,14 @@ class Player(pygame.sprite.Sprite):
                 self.rot_speed = 0
 
     def level_complete(self):
-        for tile in tiles:
-            tile_class = tile["property"].get("type")
-            if tile_class == "Win":
+        collided, response = self.polygon_collision(
+            self.global_polygon,
+            star_polygon
+        )
 
-
-                tile_poly = self.rect_to_poly(tile["rect"])
-
-                collided, response = self.polygon_collision(
-                    self.global_polygon,
-                    tile_poly
-                )
-
-                if collided:
-                    print("Win")
-
-
-    def kill_block(self):
-        for tile in tiles:
-
-
-            if tile["property"].get("type") != "Kill":
-                continue
-
-            tile_poly = self.rect_to_poly(tile["rect"])
-
-            collided, response = self.polygon_collision(
-                self.global_polygon,
-                tile_poly
-            )
-
-            if collided:
-                crash_fx.play()
-                print("AAAAAAAAA")
-                Settings.game_state = "lost"
-
-        
-
-
-
-
-
-
-        
-
-
-    
+        if collided:
+            win_fx.play()
+            Settings.game_state = "has_won"
 
     def update(self):
         
@@ -406,14 +365,8 @@ class Player(pygame.sprite.Sprite):
 
         self.velocity.x *= 0.985
         self.test_collision()
-        #self.level_complete()
-        self.kill_block()
-       
-        
+        self.level_complete()
 
-
-
-        
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -453,16 +406,10 @@ class Bullet(pygame.sprite.Sprite):
                 self.kill()
 
 
-
 player_group = pygame.sprite.GroupSingle()
 player_group.add(Player(start_x, start_y))
 
 bullet_group = pygame.sprite.Group()
-
-
-
-
-
 
 
 #Game loop
@@ -529,7 +476,8 @@ while True:
                             Settings.player_level = current_level
                         
 
-                            map_file, start_x, start_y, bullet_count, bullet_max = Settings.level_load()
+                            map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y = Settings.level_load()
+                            star, star_rect, star_polygon = create_star(goal_x, goal_y)
 
                             load_level(map_file)
                         
@@ -551,28 +499,26 @@ while True:
 
                     continue
 
+                case "has_won":
+                    if next_level_rect.collidepoint(event.pos):#
+                        Settings.player_level += 1
+                        Settings.playing_state = "start"
+                        Settings.game_state = "playing"
 
-                        
+                        map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y = Settings.level_load()
+                        star, star_rect, star_polygon = create_star(goal_x, goal_y)
 
+                        load_level(map_file)
+
+                        player_group.sprite.pos = pygame.Vector2(start_x, start_y)
+                        player_group.sprite.velocity = pygame.Vector2(0, 0)
+                        player_group.sprite.gravity_enabled = False
+
+                    continue                        
+
+
+#Non-events below
 ###############################################
-
-
-
-
-
-
-
-
-                    
-
-                   
-                
-
-                    
-
-                
-
-
 
     match Settings.game_state:
         case "start_menu":
@@ -584,10 +530,8 @@ while True:
             if start_music == True:
                 play_music()
                 start_music = False
+
         
-     ###
-
-
         case "playing":
 
             if start_music == False:
@@ -599,27 +543,14 @@ while True:
                 bullet_group.update()
 
             screen.blit(bg_surface, (0,0))
-        
+            screen.blit(star, star_rect)
+            pygame.draw.polygon(screen, (0,255,0), star_polygon, 2)
         
             draw_map()
 
             screen.blit(pause_surface, pause_rect)
             bullet_group.draw(screen)
             player_group.draw(screen)
-
-
-
-
-
-
-
-
-      
-            
-        
-        
-
-        
         
             match Settings.playing_state:
                 case "start":
@@ -633,7 +564,6 @@ while True:
                 
                     bullet_count = 0
 
-            
 
                 case "in_proggress":
                     player_group.sprite.start_spin()
@@ -647,21 +577,22 @@ while True:
                             Settings.time = 0
 
 
-
         case "lost":
             screen.blit(loss_screen, loss_screen_rect)
             screen.blit(restart_button, restart_button_rect)
 
-        
 
+        case "has_won":
+            screen.blit(win_screen, win_screen_rect)
+            screen.blit(next_level,next_level_rect)
+
+        
         case "selecting_level":
             Settings.paused = False
             screen.blit(level_select_BG, (0,0))
             level_selection.draw(screen)
 
-                
-
-
+    
     if Settings.paused:
             
         screen.blit(pause_menu, pause_menu_rect)
@@ -669,17 +600,10 @@ while True:
         screen.blit(cont_surface, cont_rect)
         screen.blit(level_button, level_button_rect)
 
-
-
-
-
-         
-
-
-
+    print(pygame.mouse.get_pos())
     
-    pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
-    pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
+    #pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
+    #pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
     pygame.display.update()
     clock.tick(60)
     
