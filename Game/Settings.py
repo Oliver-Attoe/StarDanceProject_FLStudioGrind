@@ -26,7 +26,7 @@ def level_load():
             start_x = 1072
             start_y = 550
             bullet_count = 0
-            bullet_max = 4
+            bullet_max = 5
             goal_x = 191
             goal_y = 681
 

@@ -6,13 +6,16 @@ from Settings import levels
 
 
 
+
 start_surface = pygame.image.load("Images/Start_screen.png").convert()
+
 s_text_test = pygame.font.Font("Images/SpyAgencyBoldItalic-BLLnV.otf", 60)
 s_text = s_text_test.render ("Barrel Roll Bullet", True, "Black")
+s_text_rect = s_text.get_rect(center = (600, 125))
 
 number_text_load = pygame.font.Font("Images/DigitalDreamers-jy99.ttf", 30)
 
-s_text_rect = s_text.get_rect(center = (600, 125))
+
 start_button  = pygame.image.load("Images/Button.png").convert()
 start_button_rect = start_button.get_rect(center = (600,400))
 
@@ -48,6 +51,10 @@ win_screen_rect = win_screen.get_rect(center = (600,400))
 
 next_level = pygame.image.load("Images/Next_level.png")
 next_level_rect = next_level.get_rect(center = (600,400))
+
+timer_text = pygame.font.Font("Images/timer_text.ttf", 90)
+
+
 
 
 class Level_select(pygame.sprite.Sprite):

@@ -6,6 +6,7 @@ from pytmx.util_pygame import load_pygame
 import Settings
 from UI import *
 from SOUNDS import *
+import Timer
 
 
 pygame.init()
@@ -15,6 +16,8 @@ clock = pygame.time.Clock()
 level_selection = button_generation(Settings.levels)
 map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y = Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
+
+timer = Timer.Stopwatch()
 
 tmx_data = load_pygame(map_file)
 tiles = []
@@ -275,10 +278,6 @@ class Player(pygame.sprite.Sprite):
                 Settings.game_state = "lost"
                 return
 
-            if tile["property"].get("type") == "Win":
-                win_fx.play()
-                Settings.game_state = "has_won"
-                return
 
             axis, overlap = response
 
@@ -322,6 +321,9 @@ class Player(pygame.sprite.Sprite):
 
         if collided:
             win_fx.play()
+            timer.stop()
+
+            
             Settings.game_state = "has_won"
 
     def update(self):
@@ -443,7 +445,6 @@ while True:
             
                 case"playing":
                     if Settings.paused == False:
-                        Settings.playing_state = "in_proggress"
                         barrel = player_group.sprite.barrel_position()
                         if bullet_count < bullet_max:
                             bullet = Bullet(barrel, player_group.sprite.angle)
@@ -452,9 +453,13 @@ while True:
                             gun_fired_fx.play()
                             player_group.sprite.recoil(bullet.velocity)
                             player_group.sprite.gravity_enabled = True
+                            if Settings.playing_state == "start":
+                                timer.start()
+                                Settings.playing_state = "in_proggress"
 
                     if pause_rect.collidepoint(event.pos):
                         Settings.paused = True
+                        timer.pause()
 
                     if Settings.paused and home_rect.collidepoint(event.pos):
                         Settings.game_state = "start_menu"
@@ -462,9 +467,12 @@ while True:
                                
                     if cont_rect.collidepoint(event.pos):
                         Settings.paused = False
+                        timer.resume()
 
                     if level_button_rect.collidepoint(event.pos):
                         Settings.game_state = "selecting_level"
+
+
 
 
                 case "selecting_level":
@@ -514,6 +522,7 @@ while True:
                         player_group.sprite.velocity = pygame.Vector2(0, 0)
                         player_group.sprite.gravity_enabled = False
 
+
                     continue                        
 
 
@@ -537,10 +546,7 @@ while True:
             if start_music == False:
                 pygame.mixer.music.stop()
 
-            if Settings.paused == False:
-                player_group.update()
-                player_group.sprite.gravity_enabled = False
-                bullet_group.update()
+
 
             screen.blit(bg_surface, (0,0))
             screen.blit(star, star_rect)
@@ -551,6 +557,14 @@ while True:
             screen.blit(pause_surface, pause_rect)
             bullet_group.draw(screen)
             player_group.draw(screen)
+
+            if Settings.paused == False:
+                player_group.update()
+                player_group.sprite.gravity_enabled = False
+                bullet_group.update()
+                timer.update()
+
+            timer.display_timer(screen)
         
             match Settings.playing_state:
                 case "start":
@@ -563,7 +577,7 @@ while True:
                     player_group.sprite.velocity =  pygame.Vector2(0,0)
                 
                     bullet_count = 0
-
+                    timer.reset_time()
 
                 case "in_proggress":
                     player_group.sprite.start_spin()
@@ -575,6 +589,9 @@ while True:
                         if Settings.time >= 120:
                             Settings.playing_state = "start"
                             Settings.time = 0
+                            timer.reset_time()
+
+
 
 
         case "lost":
@@ -585,6 +602,9 @@ while True:
         case "has_won":
             screen.blit(win_screen, win_screen_rect)
             screen.blit(next_level,next_level_rect)
+            timer.display_timer(screen)
+            
+            
 
         
         case "selecting_level":
@@ -600,7 +620,7 @@ while True:
         screen.blit(cont_surface, cont_rect)
         screen.blit(level_button, level_button_rect)
 
-    print(pygame.mouse.get_pos())
+    #print(pygame.mouse.get_pos())
     
     #pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
     #pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
