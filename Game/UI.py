@@ -54,6 +54,7 @@ next_level_rect = next_level.get_rect(center = (600,400))
 
 timer_text = pygame.font.Font("Images/timer_text.ttf", 90)
 
+mini_star = pygame.image.load("Images/Mini_star.png").convert_alpha()
 
 
 
@@ -111,6 +112,50 @@ def create_star(goal_x, goal_y):
 
 
     return star, star_rect,star_polygon
+
+def create_mini_stars():
+
+    mini_star_rect = mini_star.get_rect(center=(600,400))
+
+    mini_star_rect2 = mini_star.get_rect(center=(300, 400))
+    
+     
+    local_m_star_polygon = [
+            pygame.Vector2(0, -45),  # 1
+             pygame.Vector2(0, 45),   # 2
+             pygame.Vector2(45, 0),    # 4
+             pygame.Vector2(-45, 0),    # 5
+         ]
+     
+    mini_star_polygon = []
+    centre = pygame.Vector2(mini_star_rect.center)
+     
+    for point in local_m_star_polygon:
+        mini_star_polygon.append(centre + point)
+
+    mini_star_polygon2 = []
+    centre2 = pygame.Vector2(mini_star_rect2.center)
+     
+    for point in local_m_star_polygon:
+        mini_star_polygon2.append(centre2 + point)
+
+
+    mini_stars_list = [
+        {
+        "rect": mini_star_rect,
+        "polygon": mini_star_polygon,
+        "collected": False
+        },
+        {
+        "rect": mini_star_rect2,
+        "polygon": mini_star_polygon2,
+        "collected": False
+        }
+    ]
+        
+     
+     
+    return mini_stars_list
 
 
 

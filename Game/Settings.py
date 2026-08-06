@@ -19,7 +19,8 @@ def level_load():
             bullet_max = 4
             goal_x = 245
             goal_y = 663
-            
+            m_stars = False
+            m_stars_required = 0
 
         case 2:
             map_file = "Maps/Level_2_map.tmx"
@@ -28,7 +29,9 @@ def level_load():
             bullet_count = 0
             bullet_max = 5
             goal_x = 191
-            goal_y = 681
+            goal_y = 681#
+            m_stars = False
+            m_stars_required = 0
 
         case 3:
             map_file = "Maps/Level_3_map.tmx"
@@ -36,8 +39,10 @@ def level_load():
             start_y = 400
             bullet_count = 0
             bullet_max = 5
-            goal_x = 1250
-            goal_y = 850
+            goal_x = 200
+            goal_y = 700
+            m_stars = True
+            m_stars_required = 2
             
     
-    return map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y
+    return map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required
