@@ -162,7 +162,7 @@ class Player(pygame.sprite.Sprite):
 
     def start_spin(self):
 
-        self.rot_speed =10
+        self.rot_speed = 11
 
     def get_global_polygon(self):
         self.global_polygon = []
@@ -326,6 +326,16 @@ class Player(pygame.sprite.Sprite):
             
             Settings.game_state = "has_won"
 
+    def realign(self):
+        a = pygame.key.get_pressed()
+        if self.grounded:
+            if a[pygame.K_a]:
+                self.angle += 7
+                self.velocity = pygame.Vector2(0, 0)
+
+
+        
+
     def update(self):
         
         self.barrel_position()
@@ -368,6 +378,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity.x *= 0.985
         self.test_collision()
         self.level_complete()
+        self.realign()
 
 
 
