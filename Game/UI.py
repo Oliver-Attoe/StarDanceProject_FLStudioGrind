@@ -115,9 +115,9 @@ def create_star(goal_x, goal_y):
 
 def create_mini_stars():
 
-    mini_star_rect = mini_star.get_rect(center=(600,400))
+    mini_star_rect = mini_star.get_rect(center=(150, 200))
 
-    mini_star_rect2 = mini_star.get_rect(center=(300, 400))
+    mini_star_rect2 = mini_star.get_rect(center=(150, 470))
     
      
     local_m_star_polygon = [

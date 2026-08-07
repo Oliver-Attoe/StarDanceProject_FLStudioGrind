@@ -22,6 +22,7 @@ timer = Timer.Stopwatch()
 
 tmx_data = load_pygame(map_file)
 tiles = []
+portals = []
 
 def load_collision():
 
@@ -43,10 +44,28 @@ def load_collision():
                             tmx_data.tileheight
                         )
 
-                        mask = pygame.mask.Mask(rect.size, fill=True)
+                        
 
-                        tiles.append({"rect": rect, "mask": mask, "property": properties})
-                            
+                        tiles.append({"rect": rect, "property": properties})
+
+def load_portals():
+    
+
+    for obj in tmx_data.get_layer_by_name("portal_layer"):
+
+        if obj.properties.get("portal_type") == "portal":
+
+            portals.append({
+                "rect": pygame.Rect(
+                    obj.x,
+                    obj.y,
+                    obj.width,
+                    obj.height
+                ),
+                "portal_id": obj.properties["portal_id"],
+                "portal_target": obj.properties["portal_target"],
+                "portal_rotation": obj.properties["portal_rotation"]
+            })              
  
 def draw_map():
     for layer in tmx_data.visible_layers:
@@ -68,6 +87,7 @@ def load_level(map_file):
 
     tiles.clear()
     load_collision()
+    load_portals()
 
 m_star_collected = False
 
@@ -107,6 +127,9 @@ class Player(pygame.sprite.Sprite):
         self.global_polygon = []
         self.get_global_polygon()
         self.goal_progress = 0
+
+
+        self.portal_cooldown = 0
 
 
     def follow_mouse(self):
@@ -239,31 +262,21 @@ class Player(pygame.sprite.Sprite):
         pygame.Vector2(rect.bottomleft)
                 ]
 
-    def test_collision(self):
-
-        for tile in tiles:
-
-            tile_poly = self.rect_to_poly(tile["rect"])
-            
-
-            collided, response = self.polygon_collision(
-                self.global_polygon,
-                tile_poly
-            )
-
-            if collided:
-                pygame.draw.polygon(screen, "red", tile_poly, 2)
-
     def resolve_collisions(self):
 
         self.grounded = False
         self.celling_hit = False
+        near_tiles = []
+
+
 
         for tile in tiles:
 
-            if not self.rect.colliderect(tile["rect"]):
-                continue
+            if self.rect.colliderect(tile["rect"]):
+                near_tiles.append(tile)
 
+
+        for tile in near_tiles:
             tile_poly = self.rect_to_poly(tile["rect"])
 
             collided, response = self.polygon_collision(
@@ -280,6 +293,14 @@ class Player(pygame.sprite.Sprite):
                 Settings.game_state = "lost"
                 return
 
+            if tile["property"].get("type") == "Blue":
+                return
+
+
+           #portal resolution here
+
+
+            
 
             axis, overlap = response
 
@@ -371,6 +392,34 @@ class Player(pygame.sprite.Sprite):
                     star["collected"] = True
                     self.goal_progress += 1
                     print("collision detected:", self.goal_progress)
+
+    def portal_collision(self):
+
+        if self.portal_cooldown > 0:
+            self.portal_cooldown -= 1
+        
+        for portal in portals:
+            if self.portal_cooldown <= 0:
+                if self.rect.colliderect(portal["rect"]):
+                
+
+                    destination = next(
+                        p for p in portals
+                        if p["portal_id"] == portal["portal_target"]
+                    )
+
+                    entry_angle = portal["portal_rotation"]
+                    exit_angle = destination["portal_rotation"]
+
+                    rotation_difference = entry_angle - exit_angle
+                    self.velocity.rotate_ip(rotation_difference)
+                    self.pos = pygame.Vector2(destination["rect"].center)
+                    self.portal_cooldown = 30
+
+
+
+
+
                 
                         
 
@@ -420,10 +469,9 @@ class Player(pygame.sprite.Sprite):
         
 
         self.velocity.x *= 0.985
-        self.test_collision()
-        self.level_complete()
         self.realign()
-        self.mini_star_load()
+        self.portal_collision()
+
 
 
 
@@ -562,6 +610,9 @@ while True:
                         player_group.sprite.pos = pygame.Vector2(start_x, start_y)
                         player_group.sprite.velocity = pygame.Vector2(0, 0)
                         player_group.sprite.gravity_enabled = False
+                        m_star_collected = False
+                        player_group.sprite.goal_progress = 0
+                        mini_stars_list = create_mini_stars() 
 
                     continue
 
@@ -627,6 +678,8 @@ while True:
             bullet_group.draw(screen)
             player_group.draw(screen)
             timer.display_timer(screen)
+            player_group.sprite.mini_star_load()
+            player_group.sprite.level_complete()
         
             match Settings.playing_state:
                 case "start":
@@ -654,6 +707,8 @@ while True:
                             Settings.time = 0
                             timer.reset_time()
                             m_star_collected = False
+                            player_group.sprite.goal_progress = 0
+                            mini_stars_list = create_mini_stars() 
 
 
 
@@ -686,6 +741,8 @@ while True:
 
     #print(pygame.mouse.get_pos())
     
+
+   
     #pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
     #pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
     pygame.display.update()
