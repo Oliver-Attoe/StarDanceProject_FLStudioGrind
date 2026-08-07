@@ -11,7 +11,7 @@ import Timer
 
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
-clock = pygame.time.Clock()
+game_clock = pygame.time.Clock()
 
 level_selection = button_generation(Settings.levels)
 map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required= Settings.level_load()
@@ -23,6 +23,7 @@ timer = Timer.Stopwatch()
 tmx_data = load_pygame(map_file)
 tiles = []
 portals = []
+abilities = []
 
 def load_collision():
 
@@ -48,10 +49,10 @@ def load_collision():
 
                         tiles.append({"rect": rect, "property": properties})
 
-def load_portals():
+def load_objects():
     
 
-    for obj in tmx_data.get_layer_by_name("portal_layer"):
+    for obj in tmx_data.get_layer_by_name("object_layer"):
 
         if obj.properties.get("portal_type") == "portal":
 
@@ -65,7 +66,20 @@ def load_portals():
                 "portal_id": obj.properties["portal_id"],
                 "portal_target": obj.properties["portal_target"],
                 "portal_rotation": obj.properties["portal_rotation"]
-            })              
+            })
+
+        if obj.properties.get("ability_type") == "clock":
+            
+            abilities.append({"rect": pygame.Rect(
+                    obj.x,
+                    obj.y,
+                    obj.width,
+                    obj.height
+                ),
+                "collected": False})
+
+
+   
  
 def draw_map():
     for layer in tmx_data.visible_layers:
@@ -87,7 +101,7 @@ def load_level(map_file):
 
     tiles.clear()
     load_collision()
-    load_portals()
+    load_objects()
 
 m_star_collected = False
 
@@ -130,6 +144,8 @@ class Player(pygame.sprite.Sprite):
 
 
         self.portal_cooldown = 0
+
+        self.frozen = False
 
 
     def follow_mouse(self):
@@ -363,14 +379,12 @@ class Player(pygame.sprite.Sprite):
             
                 Settings.game_state = "has_won"
 
-
     def realign(self):
         a = pygame.key.get_pressed()
         if self.grounded:
             if a[pygame.K_a]:
                 self.angle += 7
                 self.velocity = pygame.Vector2(0, 0)
-
 
     def mini_star_load(self):
 
@@ -416,6 +430,27 @@ class Player(pygame.sprite.Sprite):
                     self.pos = pygame.Vector2(destination["rect"].center)
                     self.portal_cooldown = 30
 
+    def time_stop_ability(self):
+        for clock in abilities:
+            if clock["collected"]:
+                continue
+
+            screen.blit(clock_surafce,clock["rect"])
+            
+            if self.rect.colliderect(clock["rect"]):
+                clock["collected"] = True
+                self.frozen = True
+                
+                
+
+    def frozen_update(self):
+
+        self.barrel_position()
+        self.follow_mouse()
+        self.retical_line()
+        self.velocity = pygame.Vector2(0,0)
+        self.rotate_image()
+        self.rot_speed =  0
 
 
 
@@ -430,8 +465,6 @@ class Player(pygame.sprite.Sprite):
         
 
     def update(self):
-        
-        self.barrel_position()
 
         self.celling_hit = False
         self.grounded = False
@@ -471,6 +504,8 @@ class Player(pygame.sprite.Sprite):
         self.velocity.x *= 0.985
         self.realign()
         self.portal_collision()
+
+        self.time_stop_ability()
 
 
 
@@ -548,6 +583,9 @@ while True:
                     
             
                 case"playing":
+
+
+                    
                     if Settings.paused == False:
                         barrel = player_group.sprite.barrel_position()
                         if bullet_count < bullet_max:
@@ -560,6 +598,9 @@ while True:
                             if Settings.playing_state == "start":
                                 timer.start()
                                 Settings.playing_state = "in_proggress"
+
+                            if player_group.sprite.frozen:
+                                player_group.sprite.frozen = False
 
                     if pause_rect.collidepoint(event.pos):
                         Settings.paused = True
@@ -577,6 +618,9 @@ while True:
                         Settings.game_state = "selecting_level"
 
 
+
+                 
+                        
 
 
                 case "selecting_level":
@@ -653,6 +697,7 @@ while True:
         
         case "playing":
 
+
             if start_music == False:
                 pygame.mixer.music.stop()
 
@@ -669,17 +714,25 @@ while True:
 
 
             if Settings.paused == False:
-                player_group.update()
-                player_group.sprite.gravity_enabled = False
-                bullet_group.update()
-                timer.update()
 
+                if player_group.sprite.frozen:
+                    player_group.sprite.frozen_update()
+                else:
+                    player_group.update()
+                    player_group.sprite.gravity_enabled = True
+
+                    bullet_group.update()
+                    timer.update()
 
             bullet_group.draw(screen)
             player_group.draw(screen)
             timer.display_timer(screen)
             player_group.sprite.mini_star_load()
             player_group.sprite.level_complete()
+
+
+                
+
         
             match Settings.playing_state:
                 case "start":
@@ -691,6 +744,9 @@ while True:
                     player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
                     player_group.sprite.velocity =  pygame.Vector2(0,0)
                     m_star_collected = False
+                    player_group.sprite.frozen = False
+                    for clock in abilities:
+                        clock["collected"] = False
                 
                     bullet_count = 0
                     timer.reset_time()
@@ -708,7 +764,13 @@ while True:
                             timer.reset_time()
                             m_star_collected = False
                             player_group.sprite.goal_progress = 0
-                            mini_stars_list = create_mini_stars() 
+                            mini_stars_list = create_mini_stars()
+                            player_group.sprite.frozen = False
+                            for clock in abilities:
+                                clock["collected"] = False
+                            
+
+
 
 
 
@@ -746,5 +808,5 @@ while True:
     #pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
     #pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
     pygame.display.update()
-    clock.tick(60)
+    game_clock.tick(60)
     

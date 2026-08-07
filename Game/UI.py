@@ -56,6 +56,7 @@ timer_text = pygame.font.Font("Images/timer_text.ttf", 90)
 
 mini_star = pygame.image.load("Images/Mini_star.png").convert_alpha()
 
+clock_surafce = pygame.image.load("Images/clock.png").convert_alpha()
 
 
 class Level_select(pygame.sprite.Sprite):
