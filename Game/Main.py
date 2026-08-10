@@ -14,7 +14,7 @@ screen = pygame.display.set_mode((1200, 800))
 game_clock = pygame.time.Clock()
 
 level_selection = button_generation(Settings.levels)
-map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required= Settings.level_load()
+map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req= Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
 mini_stars_list = create_mini_stars()
 
@@ -24,6 +24,7 @@ tmx_data = load_pygame(map_file)
 tiles = []
 portals = []
 abilities = []
+objs = []
 
 def load_collision():
 
@@ -77,6 +78,18 @@ def load_objects():
                     obj.height
                 ),
                 "collected": False})
+
+        if obj.properties.get("obj_type") == "bad_guy":
+            
+            objs.append({"rect": pygame.Rect(
+                    obj.x,
+                    obj.y,
+                    obj.width,
+                    obj.height
+                ),
+                "killed": False})  
+
+        
 
 
    
@@ -146,6 +159,8 @@ class Player(pygame.sprite.Sprite):
         self.portal_cooldown = 0
 
         self.frozen = False
+
+        self.kill_count = 0
 
 
     def follow_mouse(self):
@@ -369,6 +384,17 @@ class Player(pygame.sprite.Sprite):
             
                     Settings.game_state = "has_won"
 
+        if kill_is_req == True:
+            if Settings.kill_count >= kills_req:
+                screen.blit(star, star_rect)
+                if collided:
+
+                    win_fx.play()
+                    timer.stop()
+
+            
+                    Settings.game_state = "has_won"
+
         else:
             screen.blit(star, star_rect)
             if collided:
@@ -452,16 +478,28 @@ class Player(pygame.sprite.Sprite):
         self.rotate_image()
         self.rot_speed =  0
 
+    def reset_player(self):
+
+        self.pos = pygame.Vector2(start_x, start_y)
+        self.rect.center = (start_x, start_y)
+        self.velocity = pygame.Vector2(0, 0)
+        self.gravity_enabled = False
+        self.frozen = False
+        self.rot_speed = 0
+        
 
 
 
-                
-                        
+    def kill_bad_guys(self):
+        
+        for obj in objs:
 
-                
-                
+            if obj["killed"]:
+                continue
 
-
+            if self.rect.colliderect(obj["rect"]):
+                obj["killed"] = True
+                Settings.kill_count += 1
         
 
     def update(self):
@@ -506,6 +544,7 @@ class Player(pygame.sprite.Sprite):
         self.portal_collision()
 
         self.time_stop_ability()
+        self.kill_bad_guys()
 
 
 
@@ -527,6 +566,18 @@ class Bullet(pygame.sprite.Sprite):
 
         self.velocity = direction * 19 #was15
 
+    def kill_bad_guys(self):
+        
+        for obj in objs:
+
+            if obj["killed"]:
+                continue
+
+            if self.rect.colliderect(obj["rect"]):
+                obj["killed"] = True
+                Settings.kill_count += 1
+                
+
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
         
@@ -545,6 +596,13 @@ class Bullet(pygame.sprite.Sprite):
         for tile in tiles:
             if self.rect.colliderect(tile["rect"]):
                 self.kill()
+
+        self.kill_bad_guys()
+        
+
+        
+
+
 
 
 player_group = pygame.sprite.GroupSingle()
@@ -632,7 +690,7 @@ while True:
                             Settings.player_level = current_level
                         
 
-                            map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required = Settings.level_load()
+                            map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req = Settings.level_load()
                             star, star_rect, star_polygon = create_star(goal_x, goal_y)
                             mini_stars_list = create_mini_stars()
 
@@ -640,7 +698,9 @@ while True:
                             load_level(map_file)
                         
 
-                            
+                            player_group.sprite.reset_player()
+                            for obj in objs:
+                                obj["killed"] = False
                             Settings.game_state = "playing"
                             Settings.playing_state = "start"
                             Settings.paused = False
@@ -651,9 +711,7 @@ while True:
                         Settings.playing_state = "start"
                         Settings.game_state = "playing"
 
-                        player_group.sprite.pos = pygame.Vector2(start_x, start_y)
-                        player_group.sprite.velocity = pygame.Vector2(0, 0)
-                        player_group.sprite.gravity_enabled = False
+                        player_group.sprite.reset_player()
                         m_star_collected = False
                         player_group.sprite.goal_progress = 0
                         mini_stars_list = create_mini_stars() 
@@ -661,20 +719,21 @@ while True:
                     continue
 
                 case "has_won":
-                    if next_level_rect.collidepoint(event.pos):#
+                    if next_level_rect.collidepoint(event.pos):
                         Settings.player_level += 1
                         Settings.playing_state = "start"
                         Settings.game_state = "playing"
 
-                        map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required = Settings.level_load()
+                        map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req = Settings.level_load()
                         star, star_rect, star_polygon = create_star(goal_x, goal_y)
                         mini_stars_list = create_mini_stars()
 
+                        player_group.sprite.reset_player()
+                        for obj in objs:
+                            obj["killed"] = False
                         load_level(map_file)
 
-                        player_group.sprite.pos = pygame.Vector2(start_x, start_y)
-                        player_group.sprite.velocity = pygame.Vector2(0, 0)
-                        player_group.sprite.gravity_enabled = False
+
 
 
                     continue                        
@@ -730,19 +789,20 @@ while True:
             player_group.sprite.mini_star_load()
             player_group.sprite.level_complete()
 
+            for obj in objs:
+                if not obj["killed"]:
+                    screen.blit(bad_guy_surface, obj["rect"])
+
 
                 
 
         
             match Settings.playing_state:
                 case "start":
-                    player_group.sprite.rot_speed = 0
                     player_group.sprite.follow_mouse()
                     player_group.sprite.retical_line()
-                    player_group.sprite.rect.centerx = start_x
-                    player_group.sprite.rect.centery = start_y
-                    player_group.sprite.pos = pygame.Vector2(player_group.sprite.rect.center)
-                    player_group.sprite.velocity =  pygame.Vector2(0,0)
+                    player_group.sprite.reset_player()
+
                     m_star_collected = False
                     player_group.sprite.frozen = False
                     for clock in abilities:
@@ -766,6 +826,8 @@ while True:
                             player_group.sprite.goal_progress = 0
                             mini_stars_list = create_mini_stars()
                             player_group.sprite.frozen = False
+                            for obj in objs:
+                                obj["killed"] = False
                             for clock in abilities:
                                 clock["collected"] = False
                             
@@ -804,7 +866,7 @@ while True:
     #print(pygame.mouse.get_pos())
     
 
-   
+    
     #pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
     #pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
     pygame.display.update()
