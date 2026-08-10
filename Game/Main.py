@@ -368,10 +368,12 @@ class Player(pygame.sprite.Sprite):
                 self.rot_speed = 0
 
     def level_complete(self):
+
         collided, response = self.polygon_collision(
             self.global_polygon,
             star_polygon
         )
+    
 
         if m_stars == True:
             if self.goal_progress >= m_stars_required:
@@ -384,7 +386,7 @@ class Player(pygame.sprite.Sprite):
             
                     Settings.game_state = "has_won"
 
-        if kill_is_req == True:
+        elif kill_is_req == True:
             if Settings.kill_count >= kills_req:
                 screen.blit(star, star_rect)
                 if collided:
@@ -486,7 +488,7 @@ class Player(pygame.sprite.Sprite):
         self.gravity_enabled = False
         self.frozen = False
         self.rot_speed = 0
-        
+        self.goal_progress = 0
 
 
 
@@ -602,6 +604,62 @@ class Bullet(pygame.sprite.Sprite):
 
         
 
+def restart_all():
+    global map_file, start_x, start_y
+    global bullet_count, bullet_max
+    global goal_x, goal_y
+    global m_stars, m_stars_required
+    global kill_is_req, kills_req
+    global star, star_rect, star_polygon
+    global mini_stars_list
+    
+
+    global m_star_collected
+
+    player_group.sprite.reset_player()
+
+    for bullet in bullet_group:
+        bullet.kill()
+
+    (
+        map_file,
+        start_x,
+        start_y,
+        bullet_count,
+        bullet_max,
+        goal_x,
+        goal_y,
+        m_stars,
+        m_stars_required,
+        kill_is_req,
+        kills_req
+    ) = Settings.level_load()
+
+    Settings.kill_count = 0
+    
+    m_star_collected = False
+    mini_stars_list = create_mini_stars()
+    star, star_rect, star_polygon = create_star(goal_x, goal_y)
+
+    Settings.time = 0
+
+    timer.reset_time()
+
+    abilities.clear()
+    objs.clear()
+
+    for obj in objs:
+        obj["killed"] = False
+
+    for ability in abilities:
+        ability["collected"] = False
+
+    
+    load_level(map_file)
+
+
+
+
 
 
 
@@ -689,18 +747,8 @@ while True:
                             current_level = button.level
                             Settings.player_level = current_level
                         
+                            restart_all()
 
-                            map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req = Settings.level_load()
-                            star, star_rect, star_polygon = create_star(goal_x, goal_y)
-                            mini_stars_list = create_mini_stars()
-
-
-                            load_level(map_file)
-                        
-
-                            player_group.sprite.reset_player()
-                            for obj in objs:
-                                obj["killed"] = False
                             Settings.game_state = "playing"
                             Settings.playing_state = "start"
                             Settings.paused = False
@@ -711,10 +759,7 @@ while True:
                         Settings.playing_state = "start"
                         Settings.game_state = "playing"
 
-                        player_group.sprite.reset_player()
-                        m_star_collected = False
-                        player_group.sprite.goal_progress = 0
-                        mini_stars_list = create_mini_stars() 
+                    restart_all()
 
                     continue
 
@@ -724,18 +769,7 @@ while True:
                         Settings.playing_state = "start"
                         Settings.game_state = "playing"
 
-                        map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req = Settings.level_load()
-                        star, star_rect, star_polygon = create_star(goal_x, goal_y)
-                        mini_stars_list = create_mini_stars()
-
-                        player_group.sprite.reset_player()
-                        for obj in objs:
-                            obj["killed"] = False
-                        load_level(map_file)
-
-
-
-
+                        restart_all()
                     continue                        
 
 
@@ -760,7 +794,7 @@ while True:
             if start_music == False:
                 pygame.mixer.music.stop()
 
-
+            
 
             screen.blit(bg_surface, (0,0))
             
@@ -799,37 +833,22 @@ while True:
         
             match Settings.playing_state:
                 case "start":
+                    restart_all()
                     player_group.sprite.follow_mouse()
                     player_group.sprite.retical_line()
-                    player_group.sprite.reset_player()
-
-                    m_star_collected = False
-                    player_group.sprite.frozen = False
-                    for clock in abilities:
-                        clock["collected"] = False
-                
-                    bullet_count = 0
-                    timer.reset_time()
+                    
 
                 case "in_proggress":
                     player_group.sprite.start_spin()
+                    player_group.sprite.gravity_enabled = True
 
                     r = pygame.key.get_pressed()
-                    player_group.sprite.gravity_enabled = True
+                    
                     if r[pygame.K_r]:
                         Settings.time += 1
                         if Settings.time >= 120:
                             Settings.playing_state = "start"
-                            Settings.time = 0
-                            timer.reset_time()
-                            m_star_collected = False
-                            player_group.sprite.goal_progress = 0
-                            mini_stars_list = create_mini_stars()
-                            player_group.sprite.frozen = False
-                            for obj in objs:
-                                obj["killed"] = False
-                            for clock in abilities:
-                                clock["collected"] = False
+                            restart_all()
                             
 
 

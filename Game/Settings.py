@@ -32,7 +32,7 @@ def level_load():
             bullet_count = 0
             bullet_max = 5
             goal_x = 191
-            goal_y = 681#
+            goal_y = 681
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
@@ -44,7 +44,7 @@ def level_load():
             start_x = 850
             start_y = 400
             bullet_count = 0
-            bullet_max = 5
+            bullet_max = 6
             goal_x = 200
             goal_y = 700
             m_stars = True
