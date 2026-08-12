@@ -1,7 +1,11 @@
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
-from Settings import levels, max_player_level
+from Settings import levels, max_player_level, gun
+
+
+
+
 
 
 

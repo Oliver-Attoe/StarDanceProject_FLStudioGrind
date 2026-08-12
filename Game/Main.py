@@ -33,7 +33,10 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, start_x, start_y):
         super().__init__()
-        self.original_image = pygame.image.load("Images/GUN.png").convert_alpha()
+        gun_image = Settings.set_gun_image()
+
+        self.original_image = pygame.image.load(f"Images/{gun_image}").convert_alpha()
+
         self.image = self.original_image
         self.rect = self.image.get_rect(center=(start_x, start_y))
         
@@ -453,20 +456,26 @@ class Player(pygame.sprite.Sprite):
 
                 elif button["name"] == "white_button":
                     Tiles.open_gates.add("White")
-                    button["pressed"] = True
-                                 
+                    button["pressed"] = True          
+
+
+    def change_gun(self):
+
+        gun_image = Settings.set_gun_image()
+
+        self.original_image = pygame.image.load(f"Images/{gun_image}").convert_alpha()
+
+        self.image = self.original_image
 
     def load_room(self):
         if random.random() < 0.02:
             man_ogg.stop()
-            Settings.player_level = 666
+            Settings.player_level = 0
             man_ogg.play(-1)
+            Settings.gun = 0
+            self.change_gun()
         else:
             man_ogg.stop()
-
-
-
-                
 
 
     def update(self):

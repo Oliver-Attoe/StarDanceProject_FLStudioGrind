@@ -7,6 +7,7 @@ levels = 20
 time = 0
 kill_count = 0
 max_player_level = 1
+gun = 1
 
 def level_lock():
     global max_player_level
@@ -18,7 +19,7 @@ def level_lock():
 def level_load():
     match player_level:
 
-        case 666:
+        case 0:
             map_file = "Maps/There is a man level.tmx"
             start_x = 1050
             start_y = 675
@@ -114,3 +115,14 @@ def level_load():
     
     return map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req
 
+def set_gun_image():
+
+    match gun:
+        case 0:
+            return "GUN0.png"
+
+        case 1:
+            return "GUN.png"
+
+        case 2:
+            return "GUN2.png"
