@@ -7,7 +7,10 @@ import Settings
 from UI import *
 from SOUNDS import *
 import Timer
-
+import Tiles
+import random
+#Imports ONLY
+###############################################################################################################
 
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
@@ -20,106 +23,12 @@ mini_stars_list = create_mini_stars()
 
 timer = Timer.Stopwatch()
 
-tmx_data = load_pygame(map_file)
-tiles = []
-portals = []
-abilities = []
-objs = []
-
-def load_collision():
-
-    tiles.clear()
-    for layer in tmx_data.visible_layers:
-        if isinstance(layer, pytmx.TiledTileLayer):
-
-            for x, y, gid in layer:
-
-                tile = tmx_data.get_tile_image_by_gid(gid)
-                properties = tmx_data.get_tile_properties_by_gid(gid)
-
-                if tile:
-                    
-                        rect = pygame.Rect(
-                            x * tmx_data.tilewidth,
-                            y * tmx_data.tileheight,
-                            tmx_data.tilewidth,
-                            tmx_data.tileheight
-                        )
-
-                        
-
-                        tiles.append({"rect": rect, "property": properties})
-
-def load_objects():
-    
-
-    for obj in tmx_data.get_layer_by_name("object_layer"):
-
-        if obj.properties.get("portal_type") == "portal":
-
-            portals.append({
-                "rect": pygame.Rect(
-                    obj.x,
-                    obj.y,
-                    obj.width,
-                    obj.height
-                ),
-                "portal_id": obj.properties["portal_id"],
-                "portal_target": obj.properties["portal_target"],
-                "portal_rotation": obj.properties["portal_rotation"]
-            })
-
-        if obj.properties.get("ability_type") == "clock":
-            
-            abilities.append({"rect": pygame.Rect(
-                    obj.x,
-                    obj.y,
-                    obj.width,
-                    obj.height
-                ),
-                "collected": False})
-
-        if obj.properties.get("obj_type") == "bad_guy":
-            
-            objs.append({"rect": pygame.Rect(
-                    obj.x,
-                    obj.y,
-                    obj.width,
-                    obj.height
-                ),
-                "killed": False})  
-
-        
-
-
-   
- 
-def draw_map():
-    for layer in tmx_data.visible_layers:
-        if isinstance(layer, pytmx.TiledTileLayer):
-            for x, y, gid in layer:
-                tile = tmx_data.get_tile_image_by_gid(gid)
-
-                if tile:
-                    screen.blit(
-                        tile,
-                        (x * tmx_data.tilewidth,
-                         y * tmx_data.tileheight)
-                    )
-
-def load_level(map_file):
-    global tmx_data
-
-    tmx_data = load_pygame(map_file)
-
-    tiles.clear()
-    load_collision()
-    load_objects()
-
 m_star_collected = False
 
-load_level(map_file)
+Tiles.load_level(map_file)
 
+#Class's ONLY
+#################################################################################################################
 class Player(pygame.sprite.Sprite):
 
     def __init__(self, start_x, start_y):
@@ -172,7 +81,7 @@ class Player(pygame.sprite.Sprite):
         self.angle = math.degrees(math.atan2(y_dist, x_dist))
 
     def retical_line(self):
-    # line starts at barrel, ends at mouse location
+    #line starts at barrel, ends at mouse location
 
         barrel = self.barrel_position()
         mouse = pygame.mouse.get_pos()
@@ -299,9 +208,12 @@ class Player(pygame.sprite.Sprite):
         self.celling_hit = False
         near_tiles = []
 
+        for tile in Tiles.tiles:
 
+            tile_type = tile["property"].get("type")
 
-        for tile in tiles:
+            if tile_type in Tiles.open_gates:
+                continue
 
             if self.rect.colliderect(tile["rect"]):
                 near_tiles.append(tile)
@@ -327,37 +239,41 @@ class Player(pygame.sprite.Sprite):
             if tile["property"].get("type") == "Blue":
                 return
 
+            if tile["property"].get("type") == "Orange":
+                return
 
-           #portal resolution here
+
+
+
 
 
             
 
             axis, overlap = response
 
-            # Move the axis so it always points from the tile to the player
+            #Move the axis so it always points from the tile to the player
             tile_center = pygame.Vector2(tile["rect"].center)
             direction = self.pos - tile_center
 
             if axis.dot(direction) < 0:
                 axis = -axis
 
-            # Minimum Translation Vector
+            #Minimum Translation Vector
             mtv = axis * overlap
 
-            # Push player out of tile
+            #Push player out of tile
             self.pos += mtv
 
             self.rect.center = self.pos
             self.get_global_polygon()
 
-            # Remove velocity into the surface
+            #Remove velocity into surface
             vn = self.velocity.dot(axis)
 
             if vn < 0:
                 self.velocity -= axis * vn
 
-            # Ground / ceiling
+            #Ground / ceiling
             if axis.y < -0.7:
                 self.grounded = True
                 self.rot_speed = 0
@@ -440,13 +356,13 @@ class Player(pygame.sprite.Sprite):
         if self.portal_cooldown > 0:
             self.portal_cooldown -= 1
         
-        for portal in portals:
+        for portal in Tiles.portals:
             if self.portal_cooldown <= 0:
                 if self.rect.colliderect(portal["rect"]):
                 
 
                     destination = next(
-                        p for p in portals
+                        p for p in Tiles.portals
                         if p["portal_id"] == portal["portal_target"]
                     )
 
@@ -458,18 +374,21 @@ class Player(pygame.sprite.Sprite):
                     self.pos = pygame.Vector2(destination["rect"].center)
                     self.portal_cooldown = 30
 
-    def time_stop_ability(self):
-        for clock in abilities:
+    def clock_image_load(self):
+        for clock in Tiles.abilities:
             if clock["collected"]:
                 continue
 
             screen.blit(clock_surafce,clock["rect"])
+
+    def time_stop_ability(self):
+        for clock in Tiles.abilities:
+            if clock["collected"]:
+                continue
             
             if self.rect.colliderect(clock["rect"]):
                 clock["collected"] = True
-                self.frozen = True
-                
-                
+                self.frozen = True            
 
     def frozen_update(self):
 
@@ -490,11 +409,9 @@ class Player(pygame.sprite.Sprite):
         self.rot_speed = 0
         self.goal_progress = 0
 
-
-
     def kill_bad_guys(self):
         
-        for obj in objs:
+        for obj in Tiles.bad_guys:
 
             if obj["killed"]:
                 continue
@@ -502,7 +419,55 @@ class Player(pygame.sprite.Sprite):
             if self.rect.colliderect(obj["rect"]):
                 obj["killed"] = True
                 Settings.kill_count += 1
-        
+
+    def load_buttons(self):
+
+        for button in Tiles.buttons:
+
+           
+            if button["pressed"]:
+                continue
+
+            
+            if button["name"] == "purple_button":
+                screen.blit(purple_button, button["rect"])
+
+            elif button["name"] == "green_button":
+                screen.blit(green_button, button["rect"])
+
+            elif button["name"] == "white_button":
+                screen.blit(white_button, button["rect"])
+
+    def button_detection_gun(self):
+
+        for button in Tiles.buttons:
+
+            if button["pressed"]:
+                continue
+            
+            if self.rect.colliderect(button["rect"]):
+
+                if button["name"] == "green_button":
+                    Tiles.open_gates.add("Green")
+                    button["pressed"] = True
+
+                elif button["name"] == "white_button":
+                    Tiles.open_gates.add("White")
+                    button["pressed"] = True
+                                 
+
+    def load_room(self):
+        if random.random() < 0.02:
+            man_ogg.stop()
+            Settings.player_level = 666
+            man_ogg.play(-1)
+        else:
+            man_ogg.stop()
+
+
+
+                
+
 
     def update(self):
 
@@ -521,7 +486,7 @@ class Player(pygame.sprite.Sprite):
            
 
 
-        # vertical movement
+        #vertical movement
         steps = max(1, int(abs(self.velocity.y)))
 
         for _ in range(steps):
@@ -547,6 +512,7 @@ class Player(pygame.sprite.Sprite):
 
         self.time_stop_ability()
         self.kill_bad_guys()
+        self.button_detection_gun()
 
 
 
@@ -570,7 +536,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def kill_bad_guys(self):
         
-        for obj in objs:
+        for obj in Tiles.bad_guys:
 
             if obj["killed"]:
                 continue
@@ -578,8 +544,26 @@ class Bullet(pygame.sprite.Sprite):
             if self.rect.colliderect(obj["rect"]):
                 obj["killed"] = True
                 Settings.kill_count += 1
-                
 
+    def button_detection_bullets(self):
+
+        for button in Tiles.buttons:
+
+           
+            if button["pressed"]:
+                continue
+
+            
+            if self.rect.colliderect(button["rect"]):
+
+                if button["name"] == "purple_button":
+                    Tiles.open_gates.add("Purple")
+                    button["pressed"] = True
+
+                elif button["name"] == "white_button":
+                    Tiles.open_gates.add("White")
+                    button["pressed"] = True
+                    
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
         
@@ -589,19 +573,16 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
 
-        if self.rect.centerx <= 0 or self.rect.centerx >= 1200:
-            self.kill()
+        for tile in Tiles.tiles:
 
-        if self.rect.centery <=0 or self.rect.centery >=800:
-            self.kill()
 
-        for tile in tiles:
             if self.rect.colliderect(tile["rect"]):
                 self.kill()
 
         self.kill_bad_guys()
+        self.button_detection_bullets()
         
-
+###############################################################################################################
         
 
 def restart_all():
@@ -612,8 +593,6 @@ def restart_all():
     global kill_is_req, kills_req
     global star, star_rect, star_polygon
     global mini_stars_list
-    
-
     global m_star_collected
 
     player_group.sprite.reset_player()
@@ -645,22 +624,25 @@ def restart_all():
 
     timer.reset_time()
 
-    abilities.clear()
-    objs.clear()
+    Tiles.abilities.clear()
+    Tiles.bad_guys.clear()
+    Tiles.portals.clear()
+    Tiles.buttons.clear()
+    Tiles.open_gates.clear()
 
-    for obj in objs:
+    for obj in Tiles.bad_guys:
         obj["killed"] = False
 
-    for ability in abilities:
+    for ability in Tiles.abilities:
         ability["collected"] = False
 
+    for button in Tiles.buttons:
+        button["pressed"] = False
+
+    for tile in Tiles.tiles:
+        tile["alpha"] = 255
     
-    load_level(map_file)
-
-
-
-
-
+    Tiles.load_level(map_file)
 
 
 player_group = pygame.sprite.GroupSingle()
@@ -668,10 +650,11 @@ player_group.add(Player(start_x, start_y))
 
 bullet_group = pygame.sprite.Group()
 
+################################################################################################################
+#Game loop ONLY
 
-#Game loop
 while True:
-    #event loop only
+    #event loop ONLY
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -701,7 +684,11 @@ while True:
                 case"playing":
 
 
-                    
+                    if pause_rect.collidepoint(event.pos):
+                        Settings.paused = True
+                        timer.pause()
+
+
                     if Settings.paused == False:
                         barrel = player_group.sprite.barrel_position()
                         if bullet_count < bullet_max:
@@ -717,10 +704,6 @@ while True:
 
                             if player_group.sprite.frozen:
                                 player_group.sprite.frozen = False
-
-                    if pause_rect.collidepoint(event.pos):
-                        Settings.paused = True
-                        timer.pause()
 
                     if Settings.paused and home_rect.collidepoint(event.pos):
                         Settings.game_state = "start_menu"
@@ -743,15 +726,17 @@ while True:
                     for button in level_selection:
 
                         if button.rect.collidepoint(event.pos):
-
-                            current_level = button.level
-                            Settings.player_level = current_level
+                            if button.level <= Settings.max_player_level:
+                                current_level = button.level
+                                Settings.player_level = current_level
                         
-                            restart_all()
+                                restart_all()
 
-                            Settings.game_state = "playing"
-                            Settings.playing_state = "start"
-                            Settings.paused = False
+                                Settings.game_state = "playing"
+                                Settings.playing_state = "start"
+                                Settings.paused = False
+                                player_group.sprite.load_room()
+
 
 
                 case "lost":
@@ -774,7 +759,7 @@ while True:
 
 
 #Non-events below
-###############################################
+###################################################################################################################
 
     match Settings.game_state:
         case "start_menu":
@@ -801,7 +786,7 @@ while True:
            
             
         
-            draw_map()
+            Tiles.draw_map(screen)
 
             screen.blit(pause_surface, pause_rect)
 
@@ -822,8 +807,11 @@ while True:
             timer.display_timer(screen)
             player_group.sprite.mini_star_load()
             player_group.sprite.level_complete()
+            player_group.sprite.load_buttons()
+            player_group.sprite.clock_image_load()
+            
 
-            for obj in objs:
+            for obj in Tiles.bad_guys:
                 if not obj["killed"]:
                     screen.blit(bad_guy_surface, obj["rect"])
 
@@ -833,22 +821,24 @@ while True:
         
             match Settings.playing_state:
                 case "start":
-                    restart_all()
-                    player_group.sprite.follow_mouse()
-                    player_group.sprite.retical_line()
+                    if not Settings.paused:
+                        restart_all()
+                        player_group.sprite.follow_mouse()
+                        player_group.sprite.retical_line()
                     
 
                 case "in_proggress":
-                    player_group.sprite.start_spin()
-                    player_group.sprite.gravity_enabled = True
+                    if not Settings.paused:
+                        player_group.sprite.start_spin()
+                        player_group.sprite.gravity_enabled = True
 
-                    r = pygame.key.get_pressed()
+                        r = pygame.key.get_pressed()
                     
-                    if r[pygame.K_r]:
-                        Settings.time += 1
-                        if Settings.time >= 120:
-                            Settings.playing_state = "start"
-                            restart_all()
+                        if r[pygame.K_r]:
+                            Settings.time += 1
+                            if Settings.time >= 120:
+                                Settings.playing_state = "start"
+                                restart_all()
                             
 
 
@@ -862,9 +852,12 @@ while True:
 
 
         case "has_won":
+            Settings.level_lock()
+
             screen.blit(win_screen, win_screen_rect)
             screen.blit(next_level,next_level_rect)
             timer.display_timer(screen)
+            
             
             
 
@@ -874,6 +867,8 @@ while True:
             screen.blit(level_select_BG, (0,0))
             level_selection.draw(screen)
 
+            lock_level_image(Settings.max_player_level)
+
     
     if Settings.paused:
             
@@ -882,12 +877,12 @@ while True:
         screen.blit(cont_surface, cont_rect)
         screen.blit(level_button, level_button_rect)
 
-    #print(pygame.mouse.get_pos())
+
+
     
 
     
-    #pygame.draw.rect(screen, (255,0,0), player_group.sprite.rect, 2)
-    #pygame.draw.polygon(screen, (0,255,0), player_group.sprite.global_polygon, 2)
+
     pygame.display.update()
     game_clock.tick(60)
     

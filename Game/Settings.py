@@ -6,11 +6,30 @@ player_level = 1
 levels = 20
 time = 0
 kill_count = 0
+max_player_level = 1
 
+def level_lock():
+    global max_player_level
+
+    if player_level >= max_player_level:
+        max_player_level = player_level + 1
 
 
 def level_load():
     match player_level:
+
+        case 666:
+            map_file = "Maps/There is a man level.tmx"
+            start_x = 1050
+            start_y = 675
+            bullet_count = 0
+            bullet_max = 4
+            goal_x = 6
+            goal_y = 6
+            m_stars = False
+            m_stars_required = 0
+            kill_is_req = False
+            kills_req = 0
         case 1:
             map_file = "Maps/Level_1_map.tmx"
             start_x = 600
@@ -79,5 +98,19 @@ def level_load():
             m_stars_required = 0
             kill_is_req = True
             kills_req = 5
+
+        case 6:
+            map_file = "Maps/Level_6_map.tmx"
+            start_x = 600
+            start_y = 200
+            bullet_count = 0
+            bullet_max = 8
+            goal_x = 600
+            goal_y = 450
+            m_stars = False
+            m_stars_required = 0
+            kill_is_req = True
+            kills_req = 1
     
     return map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req
+

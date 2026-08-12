@@ -11,19 +11,19 @@
  <tile id="2" type="Win">
   <image source="../Images/Tiles/finish.png" width="16" height="16"/>
  </tile>
- <tile id="3">
+ <tile id="3" type="Green">
   <image source="../Images/Tiles/Green.png" width="16" height="16"/>
  </tile>
  <tile id="4" type="O_portal">
   <image source="../Images/Tiles/orange_portal.png" width="128" height="16"/>
  </tile>
- <tile id="5">
+ <tile id="5" type="Purple">
   <image source="../Images/Tiles/purple.png" width="16" height="16"/>
  </tile>
  <tile id="6" type="Kill">
   <image source="../Images/Tiles/Red.png" width="16" height="16"/>
  </tile>
- <tile id="7">
+ <tile id="7" type="White">
   <image source="../Images/Tiles/white.png" width="16" height="16"/>
  </tile>
  <tile id="8" type="Blue">

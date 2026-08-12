@@ -1,7 +1,7 @@
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
-from Settings import levels
+from Settings import levels, max_player_level
 
 
 
@@ -60,6 +60,12 @@ clock_surafce = pygame.image.load("Images/clock.png").convert_alpha()
 
 bad_guy_surface = pygame.image.load("Images/3 bad guys.png")
 
+purple_button = pygame.image.load("Images/purple_button.png").convert_alpha()
+green_button = pygame.image.load("Images/green_button.png").convert_alpha()
+white_button = pygame.image.load("Images/white_button.png").convert_alpha()
+
+locked_surface = pygame.image.load("Images/Locked.png").convert_alpha()
+
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
         super().__init__()
@@ -72,6 +78,7 @@ class Level_select(pygame.sprite.Sprite):
         text_rect = level_button_numb.get_rect(center=self.image.get_rect().center)
 
         self.image.blit(level_button_numb, text_rect)
+
         
 
 level_group = pygame.sprite.Group()
@@ -90,7 +97,16 @@ def button_generation(levels):
                 x = 360
                 y += 120
 
+            
+
         return level_group
+
+def lock_level_image(max_player_level):
+    for level_button in level_group:
+        if level_button.level > max_player_level:
+            screen.blit(locked_surface, level_button.rect)
+            
+
 
 
 def create_star(goal_x, goal_y):
