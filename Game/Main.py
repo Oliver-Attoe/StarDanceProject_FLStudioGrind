@@ -130,7 +130,7 @@ class Player(pygame.sprite.Sprite):
 
     def start_spin(self):
 
-        self.rot_speed = 11
+        self.rot_speed = 11 if self.rot_speed > 0 else -11
 
     def get_global_polygon(self):
         self.global_polygon = []
@@ -330,8 +330,12 @@ class Player(pygame.sprite.Sprite):
         a = pygame.key.get_pressed()
         if self.grounded:
             if a[pygame.K_a]:
-                self.angle += 7
-                self.velocity = pygame.Vector2(0, 0)
+                if self.rot_speed > 0:
+                    self.angle += 7 
+                    self.velocity = pygame.Vector2(0, 0)
+                else:
+                    self.angle -= 7
+                    self.velocity = pygame.Vector2(0, 0)
 
     def mini_star_load(self):
 
@@ -379,6 +383,9 @@ class Player(pygame.sprite.Sprite):
 
     def clock_image_load(self):
         for clock in Tiles.abilities:
+            if clock["ability_type"] != "clock":
+                continue
+
             if clock["collected"]:
                 continue
 
@@ -386,6 +393,9 @@ class Player(pygame.sprite.Sprite):
 
     def time_stop_ability(self):
         for clock in Tiles.abilities:
+            if clock["ability_type"] != "clock":
+                continue
+
             if clock["collected"]:
                 continue
             
@@ -477,7 +487,28 @@ class Player(pygame.sprite.Sprite):
         else:
             man_ogg.stop()
 
-    
+    def rotation_reverse(self):
+        for ability in Tiles.abilities:
+
+            if ability["ability_type"] != "reverse_rotation":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            if self.rect.colliderect(ability["rect"]):
+                    ability["collected"] = True
+                    self.rot_speed = -self.rot_speed      
+
+    def rotation_load(self):
+        for ability in Tiles.abilities:
+            if ability["ability_type"] != "reverse_rotation":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            screen.blit(rotation_arrow,ability["rect"])
 
     def update(self):
 
@@ -523,6 +554,7 @@ class Player(pygame.sprite.Sprite):
         self.time_stop_ability()
         self.kill_bad_guys()
         self.button_detection_gun()
+        self.rotation_reverse()
 
 
 
@@ -738,7 +770,7 @@ while True:
                     for button in level_selection:
 
                         if button.rect.collidepoint(event.pos):
-                            if button.level <= Settings.max_player_level:
+                            #if button.level <= Settings.max_player_level:
                                 current_level = button.level
                                 Settings.player_level = current_level
                         
@@ -834,6 +866,7 @@ while True:
             player_group.sprite.level_complete()
             player_group.sprite.load_buttons()
             player_group.sprite.clock_image_load()
+            player_group.sprite.rotation_load()
             
 
             for obj in Tiles.bad_guys:

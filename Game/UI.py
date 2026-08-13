@@ -85,6 +85,7 @@ waiver_text =  pygame.font.Font("Images/Times_new.ttf", 90)
 waiver_text_render = waiver_text.render ("Terms and Conditions", True, "Black")
 waiver_rect = waiver_text_render.get_rect(center = (600, 65))
 
+rotation_arrow = pygame.image.load("Images/rotation_arrow.png")
 
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):

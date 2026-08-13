@@ -66,7 +66,8 @@ def load_objects():
                     obj.width,
                     obj.height
                 ),
-                "collected": False})
+                "collected": False,
+                "ability_type": "clock"})
 
         if obj.properties.get("ability_type") == "reverse_rotation":
             
@@ -76,7 +77,8 @@ def load_objects():
                     obj.width,
                     obj.height
                 ),
-                "collected": False})
+                "collected": False,
+                "ability_type": "reverse_rotation"})
 
         if obj.properties.get("obj_type") == "bad_guy":
             
