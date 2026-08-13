@@ -1,14 +1,13 @@
 import pygame
 from sys import exit
 import math
-import pytmx
-from pytmx.util_pygame import load_pygame
 import Settings
 from UI import *
 from SOUNDS import *
 import Timer
 import Tiles
 import random
+import Waiver
 #Imports ONLY
 ###############################################################################################################
 
@@ -17,6 +16,7 @@ screen = pygame.display.set_mode((1200, 800))
 game_clock = pygame.time.Clock()
 
 level_selection = button_generation(Settings.levels)
+check_boxes = Waiver.check_box_generation(screen, unchecked_box)
 map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req= Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
 mini_stars_list = create_mini_stars()
@@ -477,6 +477,7 @@ class Player(pygame.sprite.Sprite):
         else:
             man_ogg.stop()
 
+    
 
     def update(self):
 
@@ -592,7 +593,7 @@ class Bullet(pygame.sprite.Sprite):
         self.button_detection_bullets()
         
 ###############################################################################################################
-        
+
 
 def restart_all():
     global map_file, start_x, start_y
@@ -688,7 +689,9 @@ while True:
 
                     if level_button_rect2.collidepoint(event.pos):
                         Settings.game_state = "selecting_level"
-                    
+
+                    if hint_button_rect.collidepoint(event.pos):
+                        Settings.game_state = "getting_hint"
             
                 case"playing":
 
@@ -764,7 +767,19 @@ while True:
                         Settings.game_state = "playing"
 
                         restart_all()
-                    continue                        
+                    continue
+
+                case "getting_hint":
+                    for box in check_boxes:
+                        if box.rect.collidepoint(event.pos):
+                            laugh.play()
+                            box.checked = True
+
+
+
+
+
+
 
 
 #Non-events below
@@ -777,6 +792,7 @@ while True:
             screen.blit(start_button, start_button_rect)
             screen.blit(s_text, s_text_rect)
             screen.blit(level_button, level_button_rect2)
+            screen.blit(hint_button, hint_button_rect)
             if start_music == True:
                 play_music()
                 start_music = False
@@ -878,6 +894,23 @@ while True:
 
             lock_level_image(Settings.max_player_level)
 
+        case "getting_hint":
+            screen.blit(hint_bg, (0,0))
+            screen.blit(Waiver.signature_surface, Waiver.signature_rect)
+            check_boxes.draw(screen)
+            screen.blit(waiver_text_render, waiver_rect)
+            for box in check_boxes:
+                if box.checked:
+                    screen.blit(checked_box, box.rect)
+            
+
+            if pygame.mouse.get_pressed()[0]:
+                Waiver.draw_signature(Settings.signing)
+                Settings.signing = True
+            else:
+                Settings.signing = False
+
+
     
     if Settings.paused:
             
@@ -891,7 +924,7 @@ while True:
     
 
     
-
+    
     pygame.display.update()
     game_clock.tick(60)
     

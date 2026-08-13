@@ -387,45 +387,14 @@ while True:
             pygame.quit()
             exit()
     
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if pygame.mouse.get_pressed()[0]:
+            if game_state == "getting_hint":
+                draw_signature(screen,signing)
+                signing = True
+        else:
+            signing = False
 
 
-                
-            if playing_state == "start":
-                player_group.sprite.pos = pygame.Vector2(600, 550)
-            
-                player_group.sprite.velocity = pygame.Vector2(0, 0)
-                player_group.sprite.gravity_enabled = False
-
-            playing_state = "in_proggress"
-            barrel = player_group.sprite.barrel_position()
-
-            bullet = Bullet(barrel, player_group.sprite.angle)
-            bullet_group.add(bullet)
-
-            player_group.sprite.recoil(bullet.velocity)
-            player_group.sprite.gravity_enabled = True
-
-    screen.blit(bg_surface, (0,0))
-
-    draw_map()
-
-    player_group.update()
-    player_group.draw(screen)
-
-    bullet_group.update()
-    bullet_group.draw(screen)
-
-    if playing_state == "start":
-        player_group.sprite.follow_mouse()
-        player_group.sprite.retical_line()
-
-    else:
-        player_group.sprite.stop_spin()
-
-
-
-    pygame.draw.polygon(screen, "red", player_group.sprite.global_polygon, 2)
     pygame.display.update()
     clock.tick(60)
     

@@ -40,7 +40,7 @@ cont_rect = cont_surface.get_rect(center = (700, 400))
 
 level_button = pygame.image.load("Images/Level_button_pause.png")
 level_button_rect = level_button.get_rect(center = (500, 400))
-level_button_rect2 = level_button.get_rect(topleft = (10, 745) )
+level_button_rect2 = level_button.get_rect(bottomleft = (10, 790) )
 
 level_select_BG = pygame.image.load("Images/Level_select_BG.png")
 
@@ -70,6 +70,22 @@ white_button = pygame.image.load("Images/white_button.png").convert_alpha()
 
 locked_surface = pygame.image.load("Images/Locked.png").convert_alpha()
 
+signature_square = pygame.image.load("Images/signature_square.png")
+
+
+hint_button = pygame.image.load("Images/hint_button.png")
+hint_button_rect = hint_button.get_rect(bottomright = (1190, 790))
+
+hint_bg = pygame.image.load("Images/hint_BG.png")
+
+unchecked_box = pygame.image.load("Images/unchecked_box.png")
+checked_box = pygame.image.load("Images/checked_box.png")
+
+waiver_text =  pygame.font.Font("Images/Times_new.ttf", 90)
+waiver_text_render = waiver_text.render ("Terms and Conditions", True, "Black")
+waiver_rect = waiver_text_render.get_rect(center = (600, 65))
+
+
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
         super().__init__()
@@ -91,7 +107,7 @@ def button_generation(levels):
         
 
         x = 360
-        y = 260
+        y = 330
 
         for level in range(1, levels + 1):
             level_button = Level_select(level, x, y)

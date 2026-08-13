@@ -1,5 +1,5 @@
 GRAVITY = 0.5
-game_state = "start_menu"
+game_state = "start_menu" 
 playing_state = "start"
 paused = False
 player_level = 1
@@ -8,6 +8,7 @@ time = 0
 kill_count = 0
 max_player_level = 1
 gun = 1
+signing = False
 
 def level_lock():
     global max_player_level
@@ -112,6 +113,19 @@ def level_load():
             m_stars_required = 0
             kill_is_req = True
             kills_req = 1
+
+        case 7:
+            map_file = "Maps/Level_7_map.tmx"
+            start_x = 1100
+            start_y = 500
+            bullet_count = 0
+            bullet_max = 10
+            goal_x = 100
+            goal_y = 100
+            m_stars = False
+            m_stars_required = 0
+            kill_is_req = False
+            kills_req = 0
     
     return map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req
 
