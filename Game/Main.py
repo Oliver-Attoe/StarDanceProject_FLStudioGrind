@@ -8,6 +8,7 @@ import Timer
 import Tiles
 import random
 import Waiver
+import Dialogue
 #Imports ONLY
 ###############################################################################################################
 
@@ -20,6 +21,7 @@ check_boxes = Waiver.check_box_generation(screen, unchecked_box)
 map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req= Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
 mini_stars_list = create_mini_stars()
+dialogue = Dialogue.Dialogue()
 
 timer = Timer.Stopwatch()
 
@@ -376,7 +378,10 @@ class Player(pygame.sprite.Sprite):
                     entry_angle = portal["portal_rotation"]
                     exit_angle = destination["portal_rotation"]
 
-                    rotation_difference = entry_angle - exit_angle
+                    if self.angle > 0:
+                        rotation_difference = entry_angle - exit_angle
+                    else:
+                        rotation_difference = -(entry_angle - exit_angle)
                     self.velocity.rotate_ip(rotation_difference)
                     self.pos = pygame.Vector2(destination["rect"].center)
                     self.portal_cooldown = 30
@@ -825,6 +830,9 @@ while True:
             screen.blit(s_text, s_text_rect)
             screen.blit(level_button, level_button_rect2)
             screen.blit(hint_button, hint_button_rect)
+            dialogue.chosen_dialogue()
+            dialogue.get_letter_list()
+            dialogue.display_text(screen)
             if start_music == True:
                 play_music()
                 start_music = False
@@ -897,7 +905,7 @@ while True:
                             if Settings.time >= 120:
                                 Settings.playing_state = "start"
                                 restart_all()
-                            
+                        
 
 
 

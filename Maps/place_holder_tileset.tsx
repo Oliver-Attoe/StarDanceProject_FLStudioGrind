@@ -14,7 +14,7 @@
  <tile id="3" type="Green">
   <image source="../Images/Tiles/Green.png" width="16" height="16"/>
  </tile>
- <tile id="4" type="O_portal">
+ <tile id="4" type="Orange">
   <image source="../Images/Tiles/orange_portal.png" width="128" height="16"/>
  </tile>
  <tile id="5" type="Purple">

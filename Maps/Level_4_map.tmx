@@ -72,7 +72,7 @@
     <property name="portal_type" value="portal"/>
    </properties>
   </object>
-  <object id="12" name="time_stop" type="clock" x="64.7499" y="675" width="80" height="80">
+  <object id="12" name="time_stop" type="clock" x="64.7499" y="675" width="80" height="80" visible="0">
    <properties>
     <property name="ability_type" value="clock"/>
    </properties>
