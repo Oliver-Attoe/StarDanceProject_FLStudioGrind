@@ -87,6 +87,7 @@ waiver_rect = waiver_text_render.get_rect(center = (600, 65))
 
 rotation_arrow = pygame.image.load("Images/rotation_arrow.png")
 
+bullet_pickup_surface = pygame.image.load("Images/bullet_pickup.png")
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
         super().__init__()

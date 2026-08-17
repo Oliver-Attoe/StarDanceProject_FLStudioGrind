@@ -5,6 +5,7 @@ paused = False
 player_level = 1
 levels = 20
 time = 0
+bullet_count = 0
 kill_count = 0
 max_player_level = 1
 gun = 1
@@ -24,7 +25,7 @@ def level_load():
             map_file = "Maps/There is a man level.tmx"
             start_x = 1050
             start_y = 675
-            bullet_count = 0
+            
             bullet_max = 4
             goal_x = 6
             goal_y = 6
@@ -36,7 +37,7 @@ def level_load():
             map_file = "Maps/Level_1_map.tmx"
             start_x = 600
             start_y = 550
-            bullet_count = 0
+            
             bullet_max = 4
             goal_x = 245
             goal_y = 663
@@ -49,11 +50,11 @@ def level_load():
         case 2:
             map_file = "Maps/Level_2_map.tmx"
             start_x = 1072
-            start_y = 550
-            bullet_count = 0
-            bullet_max = 5
-            goal_x = 191
-            goal_y = 681
+            start_y = 150
+            
+            bullet_max = 4
+            goal_x = 1050
+            goal_y = 450
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
@@ -62,26 +63,25 @@ def level_load():
 
         case 3:
             map_file = "Maps/Level_3_map.tmx"
-            start_x = 850
-            start_y = 400
-            bullet_count = 0
+            start_x = 150
+            start_y = 675
+            
             bullet_max = 6
-            goal_x = 200
+            goal_x = 500
             goal_y = 700
-            m_stars = True
-            m_stars_required = 2
+            m_stars = False
+            m_stars_required = 0
             kill_is_req = False
             kills_req = 0
-          
 
         case 4:
             map_file = "Maps/Level_4_map.tmx"#
             start_x = 200
-            start_y = 100
-            bullet_count = 0
-            bullet_max = 7
-            goal_x = 1100
-            goal_y = 325
+            start_y = 550
+            
+            bullet_max = 4
+            goal_x = 700
+            goal_y = 700
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
@@ -90,44 +90,44 @@ def level_load():
 
         case 5:
             map_file = "Maps/Level_5_map.tmx"
-            start_x = 400
-            start_y = 500
-            bullet_count = 0
-            bullet_max = 7
-            goal_x = 1100
-            goal_y = 220
+            start_x = 150
+            start_y = 450
+            
+            bullet_max = 5
+            goal_x = 550
+            goal_y = 250
             m_stars = False
             m_stars_required = 0
-            kill_is_req = True
-            kills_req = 5
+            kill_is_req = False
+            kills_req = 0
 
         case 6:
             map_file = "Maps/Level_6_map.tmx"
-            start_x = 600
-            start_y = 200
-            bullet_count = 0
-            bullet_max = 8
-            goal_x = 600
-            goal_y = 450
+            start_x = 1100
+            start_y = 650
+        
+            bullet_max = 4
+            goal_x = 200
+            goal_y = 700
             m_stars = False
             m_stars_required = 0
-            kill_is_req = True
-            kills_req = 1
+            kill_is_req = False
+            kills_req = 0
 
         case 7:
             map_file = "Maps/Level_7_map.tmx"
-            start_x = 1100
+            start_x = 200
             start_y = 500
-            bullet_count = 0
-            bullet_max = 8
-            goal_x = 150
+            
+            bullet_max = 2
+            goal_x = 1100
             goal_y = 700
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
     
-    return map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req
+    return map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req
 
 def set_gun_image():
 

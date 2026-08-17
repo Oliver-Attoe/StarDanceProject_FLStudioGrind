@@ -80,6 +80,17 @@ def load_objects():
                 "collected": False,
                 "ability_type": "reverse_rotation"})
 
+        if obj.properties.get("ability_type") == "bullet_pickup":
+            
+            abilities.append({"rect": pygame.Rect(
+                    obj.x,
+                    obj.y,
+                    obj.width,
+                    obj.height
+                ),
+                "collected": False,
+                "ability_type": "bullet_pickup"})
+
         if obj.properties.get("obj_type") == "bad_guy":
             
             bad_guys.append({"rect": pygame.Rect(

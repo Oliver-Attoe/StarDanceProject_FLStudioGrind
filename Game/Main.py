@@ -18,7 +18,7 @@ game_clock = pygame.time.Clock()
 
 level_selection = button_generation(Settings.levels)
 check_boxes = Waiver.check_box_generation(screen, unchecked_box)
-map_file, start_x, start_y, bullet_count, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req= Settings.level_load()
+map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req= Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
 mini_stars_list = create_mini_stars()
 dialogue = Dialogue.Dialogue()
@@ -76,6 +76,8 @@ class Player(pygame.sprite.Sprite):
 
         self.kill_count = 0
 
+        self.rotation_direction = 1
+
 
     def follow_mouse(self):
         self.m_pos = pygame.mouse.get_pos()
@@ -132,7 +134,7 @@ class Player(pygame.sprite.Sprite):
 
     def start_spin(self):
 
-        self.rot_speed = 11 if self.rot_speed > 0 else -11
+        self.rot_speed = 11 * self.rotation_direction
 
     def get_global_polygon(self):
         self.global_polygon = []
@@ -330,14 +332,15 @@ class Player(pygame.sprite.Sprite):
 
     def realign(self):
         a = pygame.key.get_pressed()
-        if self.grounded:
-            if a[pygame.K_a]:
-                if self.rot_speed > 0:
-                    self.angle += 7 
-                    self.velocity = pygame.Vector2(0, 0)
-                else:
-                    self.angle -= 7
-                    self.velocity = pygame.Vector2(0, 0)
+
+        if self.grounded and a[pygame.K_a]:
+
+            if self.rotation_direction > 0:
+                self.angle += 7
+            else:
+                self.angle -= 7
+
+            self.velocity = pygame.Vector2(0, 0)
 
     def mini_star_load(self):
 
@@ -471,8 +474,7 @@ class Player(pygame.sprite.Sprite):
 
                 elif button["name"] == "white_button":
                     Tiles.open_gates.add("White")
-                    button["pressed"] = True          
-
+                    button["pressed"] = True         
 
     def change_gun(self):
 
@@ -502,8 +504,10 @@ class Player(pygame.sprite.Sprite):
                 continue
 
             if self.rect.colliderect(ability["rect"]):
-                    ability["collected"] = True
-                    self.rot_speed = -self.rot_speed      
+                ability["collected"] = True
+
+                self.rotation_direction *= -1
+                self.rot_speed = 11 * self.rotation_direction     
 
     def rotation_load(self):
         for ability in Tiles.abilities:
@@ -514,6 +518,32 @@ class Player(pygame.sprite.Sprite):
                 continue
 
             screen.blit(rotation_arrow,ability["rect"])
+
+    def bullet_pickup(self):
+        for ability in Tiles.abilities:
+
+            if ability["ability_type"] != "bullet_pickup":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            if self.rect.colliderect(ability["rect"]):
+                ability["collected"] = True
+
+                Settings.bullet_count -= 1
+
+    def bullet_pickup_load(self):
+        for ability in Tiles.abilities:
+            if ability["ability_type"] != "bullet_pickup":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            screen.blit(bullet_pickup_surface,ability["rect"])
+   
+
 
     def update(self):
 
@@ -560,6 +590,7 @@ class Player(pygame.sprite.Sprite):
         self.kill_bad_guys()
         self.button_detection_gun()
         self.rotation_reverse()
+        self.bullet_pickup()
 
 
 
@@ -651,7 +682,7 @@ def restart_all():
         map_file,
         start_x,
         start_y,
-        bullet_count,
+        
         bullet_max,
         goal_x,
         goal_y,
@@ -662,6 +693,7 @@ def restart_all():
     ) = Settings.level_load()
 
     Settings.kill_count = 0
+    Settings.bullet_count = 0
     
     m_star_collected = False
     mini_stars_list = create_mini_stars()
@@ -740,10 +772,10 @@ while True:
 
                     if Settings.paused == False:
                         barrel = player_group.sprite.barrel_position()
-                        if bullet_count < bullet_max:
+                        if Settings.bullet_count < bullet_max:
                             bullet = Bullet(barrel, player_group.sprite.angle)
                             bullet_group.add(bullet)
-                            bullet_count += 1
+                            Settings.bullet_count += 1
                             gun_fired_fx.play()
                             player_group.sprite.recoil(bullet.velocity)
                             player_group.sprite.gravity_enabled = True
@@ -834,7 +866,7 @@ while True:
             dialogue.get_letter_list()
             dialogue.display_text(screen)
             if start_music == True:
-                play_music()
+                #play_music()
                 start_music = False
 
         
@@ -875,6 +907,7 @@ while True:
             player_group.sprite.load_buttons()
             player_group.sprite.clock_image_load()
             player_group.sprite.rotation_load()
+            player_group.sprite.bullet_pickup_load()
             
 
             for obj in Tiles.bad_guys:
