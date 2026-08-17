@@ -119,7 +119,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity -= velocity * 1.5
 
     def in_air_rotate(self):
-        self.angle += self.rot_speed
+        self.angle += self.rot_speed * Settings.time_multiplyer
 
     def rotate_image(self):
         self.image = pygame.transform.rotate(
@@ -546,19 +546,45 @@ class Player(pygame.sprite.Sprite):
 
             screen.blit(bullet_pickup_surface,ability["rect"])
    
+    def slow_time(self):
+        for ability in Tiles.abilities:
 
+            if ability["ability_type"] != "slow_time":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            if self.rect.colliderect(ability["rect"]):
+                ability["collected"] = True
+                Settings.time_multiplyer = 0.4
+                Settings.slow_time_active = True
+                Settings.slow_time_start = pygame.time.get_ticks()
+
+
+    def slow_time_load(self):
+        for ability in Tiles.abilities:
+            if ability["ability_type"] != "slow_time":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            screen.blit(slow_time_surface,ability["rect"])   
+
+                
 
     def update(self):
 
         self.celling_hit = False
         self.grounded = False
         if self.gravity_enabled == True:
-            self.velocity.y += Settings.GRAVITY
+            self.velocity.y += Settings.GRAVITY * Settings.time_multiplyer
 
         steps = max(1, int(abs(self.velocity.x)))
 
         for _ in range(steps):
-            self.pos.x += self.velocity.x / steps
+            self.pos.x += (self.velocity.x * Settings.time_multiplyer) / steps
             self.rect.centerx = self.pos.x
             self.get_global_polygon()
             self.resolve_collisions()
@@ -569,7 +595,7 @@ class Player(pygame.sprite.Sprite):
         steps = max(1, int(abs(self.velocity.y)))
 
         for _ in range(steps):
-            self.pos.y += self.velocity.y / steps
+            self.pos.y += (self.velocity.y * Settings.time_multiplyer) / steps
             self.rect.centery = self.pos.y
             self.get_global_polygon()
             self.resolve_collisions()
@@ -594,6 +620,7 @@ class Player(pygame.sprite.Sprite):
         self.button_detection_gun()
         self.rotation_reverse()
         self.bullet_pickup()
+        self.slow_time()
 
 
 
@@ -656,7 +683,6 @@ class Bullet(pygame.sprite.Sprite):
                         Tiles.broken_tiles.add("Breakable")
 
 
-
                     
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
@@ -664,8 +690,8 @@ class Bullet(pygame.sprite.Sprite):
         old_center = self.rect.center
         self.rect = self.image.get_rect(center=old_center)
 
-        self.rect.x += self.velocity.x
-        self.rect.y += self.velocity.y
+        self.rect.x += self.velocity.x * Settings.time_multiplyer
+        self.rect.y += self.velocity.y * Settings.time_multiplyer
 
         for tile in Tiles.tiles:
 
@@ -682,7 +708,7 @@ class Bullet(pygame.sprite.Sprite):
 
 def restart_all():
     global map_file, start_x, start_y
-    global bullet_count, bullet_max
+    global bullet_max
     global goal_x, goal_y
     global m_stars, m_stars_required
     global kill_is_req, kills_req
@@ -711,6 +737,8 @@ def restart_all():
 
     Settings.kill_count = 0
     Settings.bullet_count = 0
+    Settings.time_multiplyer = 1.0
+    Settings.slow_time_active = False
     
     m_star_collected = False
     mini_stars_list = create_mini_stars()
@@ -746,7 +774,7 @@ player_group.add(Player(start_x, start_y))
 
 bullet_group = pygame.sprite.Group()
 
-################################################################################################################
+#################################################################################################################
 #Game loop ONLY
 
 while True:
@@ -925,6 +953,7 @@ while True:
             player_group.sprite.clock_image_load()
             player_group.sprite.rotation_load()
             player_group.sprite.bullet_pickup_load()
+            player_group.sprite.slow_time_load()
             
 
             for obj in Tiles.bad_guys:
@@ -955,6 +984,11 @@ while True:
                             if Settings.time >= 120:
                                 Settings.playing_state = "start"
                                 restart_all()
+
+                        if Settings.slow_time_active:
+                            if pygame.time.get_ticks() - Settings.slow_time_start >= 3000:
+                                Settings.time_multiplyer = 1.0
+                                Settings.slow_time_active = False
                         
 
 
