@@ -6,6 +6,7 @@ from pytmx.util_pygame import load_pygame
 tmx_data = None
 tiles = []
 open_gates = set()
+broken_tiles = set()
 
 portals = []
 abilities = []
@@ -143,6 +144,19 @@ def draw_map(screen):
 
                     image = tile.copy()
                     image.set_alpha(50)
+
+                    screen.blit(
+                        image,
+                        (
+                            x * tmx_data.tilewidth,
+                            y * tmx_data.tileheight
+                        )
+                    )
+
+                if tile_type in broken_tiles:
+
+                    image = tile.copy()
+                    image.set_alpha(0)
 
                     screen.blit(
                         image,

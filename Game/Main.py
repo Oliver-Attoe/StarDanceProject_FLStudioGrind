@@ -222,6 +222,9 @@ class Player(pygame.sprite.Sprite):
             if tile_type in Tiles.open_gates:
                 continue
 
+            if tile_type in Tiles.broken_tiles:
+                continue
+
             if self.rect.colliderect(tile["rect"]):
                 near_tiles.append(tile)
 
@@ -641,6 +644,19 @@ class Bullet(pygame.sprite.Sprite):
                 elif button["name"] == "white_button":
                     Tiles.open_gates.add("White")
                     button["pressed"] = True
+
+    def break_tiles(self):
+       
+
+        for tile in Tiles.tiles:
+
+            if self.rect.colliderect(tile["rect"]):
+                if tile["property"].get("type") == "Breakable":
+                    if self.rect.colliderect(tile["rect"]):
+                        Tiles.broken_tiles.add("Breakable")
+
+
+
                     
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
@@ -659,6 +675,7 @@ class Bullet(pygame.sprite.Sprite):
 
         self.kill_bad_guys()
         self.button_detection_bullets()
+        self.break_tiles()
         
 ###############################################################################################################
 

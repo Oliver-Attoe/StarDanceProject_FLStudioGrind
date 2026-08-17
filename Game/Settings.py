@@ -125,8 +125,22 @@ def level_load():
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
+            kills_req = 0#
+
+        case 8:
+            map_file = "Maps/Level_8_map.tmx"
+            start_x = 1100
+            start_y = 650
+        
+            bullet_max = 4
+            goal_x = 200
+            goal_y = 700
+            m_stars = False
+            m_stars_required = 0
+            kill_is_req = False
             kills_req = 0
-    
+
+               
     return map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req
 
 def set_gun_image():

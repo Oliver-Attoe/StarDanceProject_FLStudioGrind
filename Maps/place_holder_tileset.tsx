@@ -8,7 +8,7 @@
  <tile id="1" type="B_portal">
   <image source="../Images/Tiles/blue_portal.png" width="128" height="16"/>
  </tile>
- <tile id="2" type="Win">
+ <tile id="2" type="Breakable">
   <image source="../Images/Tiles/finish.png" width="16" height="16"/>
  </tile>
  <tile id="3" type="Green">
