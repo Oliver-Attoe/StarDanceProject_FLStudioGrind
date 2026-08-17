@@ -908,10 +908,10 @@ while True:
             screen.blit(level_button, level_button_rect2)
             screen.blit(hint_button, hint_button_rect)
             dialogue.chosen_dialogue()
-            dialogue.get_letter_list()
+            dialogue.get_word_list()
             dialogue.display_text(screen)
             if start_music == True:
-                #play_music()
+                play_music()
                 start_music = False
 
         

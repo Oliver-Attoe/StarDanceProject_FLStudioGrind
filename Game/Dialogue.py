@@ -16,9 +16,9 @@ class Dialogue(pygame.sprite.Sprite):
 
         self.letter_list = []
 
-        self.font = pygame.font.Font("Images/undertale_font.ttf", 30)
+        self.font = pygame.font.Font("Images/undertale_font.ttf", 50)
 
-        self.text_delay = random.uniform(40, 60)
+        self.text_delay = 150
 
         self.last_letter_time = pygame.time.get_ticks()
 
@@ -29,9 +29,9 @@ class Dialogue(pygame.sprite.Sprite):
             case 1:
                 self.text = "Wow it is working, call me Toby fox the way I make these text boxes, this took too long, little side quest, it should be a new screen now i hope???? "
 
-    def get_letter_list(self):
-        for char in self.text:
-            self.letter_list.append(char)
+    def get_word_list(self):
+        self.letter_list = self.text.split(" ")
+
 
     def display_text(self, screen):
         x = self.rect.topleft[0] + 40
@@ -51,32 +51,39 @@ class Dialogue(pygame.sprite.Sprite):
         current_x = x
         current_y = y
 
-        for letter in self.letter_list[:self.letter_index]:
+        for word in self.letter_list[:self.letter_index]:
 
-            text_surface = self.font.render(
-                letter,
+            word_surface = self.font.render(
+                word + " ",
                 True,
                 (255, 255, 255)
             )
 
+            word_width = word_surface.get_width()
+
+            if current_x + word_width > self.rect.right - 40:
+                current_y += 70
+                current_x = x
+
             screen.blit(
-                text_surface,
+                word_surface,
                 (current_x, current_y)
             )
-
-            number = random.uniform(0.7, 1.0)
-            voice_blip.set_volume(number)
             voice_blip.play()
 
-            current_x += 20
-            if current_x >= 950:
-                current_y += 40
-                current_x = self.rect.topleft[0] + 40
+            current_x += word_width
 
-            if current_y >= 720:
-                screen.blit(self.image, self.rect)
+            if current_y >= 700:
+                screen.blit(
+                self.image,
+                self.rect
+            )
                 current_x = self.rect.topleft[0] + 40
-                current_y = self.rect.topleft[1] + 25
+                current_y  = self.rect.topleft[1] + 25
+
+            if self.letter_index >= len(self.letter_list):
+                voice_blip.stop()
+
 
 
 
