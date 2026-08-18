@@ -78,6 +78,8 @@ class Player(pygame.sprite.Sprite):
 
         self.rotation_direction = 1
 
+        self.gravity_flip = 1
+
 
     def follow_mouse(self):
         self.m_pos = pygame.mouse.get_pos()
@@ -336,14 +338,25 @@ class Player(pygame.sprite.Sprite):
     def realign(self):
         a = pygame.key.get_pressed()
 
-        if self.grounded and a[pygame.K_a]:
+        if self.gravity_flip == 1:
+            if self.grounded and a[pygame.K_a]:
 
-            if self.rotation_direction > 0:
-                self.angle += 7
-            else:
-                self.angle -= 7
+                if self.rotation_direction > 0:
+                    self.angle += 7
+                else:
+                    self.angle -= 7
 
-            self.velocity = pygame.Vector2(0, 0)
+                self.velocity = pygame.Vector2(0, 0)
+
+        else:
+            if self.celling_hit and a[pygame.K_a]:
+
+                if self.rotation_direction > 0:
+                    self.angle += 7
+                else:
+                    self.angle -= 7
+
+                self.velocity = pygame.Vector2(0, 0)          
 
     def mini_star_load(self):
 
@@ -432,6 +445,7 @@ class Player(pygame.sprite.Sprite):
         self.frozen = False
         self.rot_speed = 0
         self.goal_progress = 0
+        self.gravity_flip =  1
 
     def kill_bad_guys(self):
         
@@ -561,7 +575,6 @@ class Player(pygame.sprite.Sprite):
                 Settings.slow_time_active = True
                 Settings.slow_time_start = pygame.time.get_ticks()
 
-
     def slow_time_load(self):
         for ability in Tiles.abilities:
             if ability["ability_type"] != "slow_time":
@@ -572,6 +585,30 @@ class Player(pygame.sprite.Sprite):
 
             screen.blit(slow_time_surface,ability["rect"])   
 
+    def gravity_swap(self):
+        for ability in Tiles.abilities:
+
+            if ability["ability_type"] != "gravity_swap":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            if self.rect.colliderect(ability["rect"]):
+                ability["collected"] = True
+                self.gravity_flip = -1
+
+    def gravity_swap_load(self):
+        for ability in Tiles.abilities:
+            if ability["ability_type"] != "gravity_swap":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            screen.blit(gravity_swap_surface,ability["rect"])   
+
+        
     def bonus_time_star(self):
 
         if Settings.level_stars[Settings.player_level - 1][0] == True:
@@ -579,8 +616,6 @@ class Player(pygame.sprite.Sprite):
 
         if (timer.time_passed / 1000) <= bonus_time:
             Settings.total_stars += 1
-            print("total", Settings.total_stars)
-            print(Settings.player_level)
             Settings.level_stars[Settings.player_level - 1][0] = True
 
     def normal_star(self):
@@ -589,8 +624,6 @@ class Player(pygame.sprite.Sprite):
 
         if self.polygon_collision(self.global_polygon, star_polygon):
             Settings.total_stars += 1
-            print("total", Settings.total_stars)
-            print(Settings.player_level)
             Settings.level_stars[Settings.player_level - 1][1] = True
 
     def bonus_bullet_star(self):
@@ -599,8 +632,6 @@ class Player(pygame.sprite.Sprite):
 
         if Settings.bullet_count < bullet_max:
             Settings.total_stars += 1
-            print("total", Settings.total_stars)
-            print(Settings.player_level)
             Settings.level_stars[Settings.player_level - 1][2] = True
 
            
@@ -612,7 +643,7 @@ class Player(pygame.sprite.Sprite):
         self.celling_hit = False
         self.grounded = False
         if self.gravity_enabled == True:
-            self.velocity.y += Settings.GRAVITY * Settings.time_multiplyer
+            self.velocity.y += Settings.GRAVITY * Settings.time_multiplyer * self.gravity_flip
 
         steps = max(1, int(abs(self.velocity.x)))
 
@@ -653,7 +684,8 @@ class Player(pygame.sprite.Sprite):
         self.button_detection_gun()
         self.rotation_reverse()
         self.bullet_pickup()
-        self.slow_time()#
+        self.slow_time()
+        self.gravity_swap()
         
 
 
@@ -997,6 +1029,7 @@ while True:
             player_group.sprite.rotation_load()
             player_group.sprite.bullet_pickup_load()
             player_group.sprite.slow_time_load()
+            player_group.sprite.gravity_swap_load()
             
 
             for obj in Tiles.bad_guys:

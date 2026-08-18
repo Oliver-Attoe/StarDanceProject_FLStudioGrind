@@ -102,6 +102,17 @@ def load_objects():
                 ),
                 "collected": False,
                 "ability_type": "slow_time"})
+            
+        if obj.properties.get("ability_type") == "gravity_swap":
+            
+            abilities.append({"rect": pygame.Rect(
+                    obj.x,
+                    obj.y,
+                    obj.width,
+                    obj.height
+                ),
+                "collected": False,
+                "ability_type": "gravity_swap"})
 
         if obj.properties.get("obj_type") == "bad_guy":
             
