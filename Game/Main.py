@@ -80,6 +80,8 @@ class Player(pygame.sprite.Sprite):
 
         self.gravity_flip = 1
 
+        self.tp_enabled = False
+
 
     def follow_mouse(self):
         self.m_pos = pygame.mouse.get_pos()
@@ -446,6 +448,7 @@ class Player(pygame.sprite.Sprite):
         self.rot_speed = 0
         self.goal_progress = 0
         self.gravity_flip =  1
+        self.tp_enabled = False
 
     def kill_bad_guys(self):
         
@@ -634,9 +637,31 @@ class Player(pygame.sprite.Sprite):
             Settings.total_stars += 1
             Settings.level_stars[Settings.player_level - 1][2] = True
 
-           
+    def tp_bullet_ability(self):
+        for ability in Tiles.abilities:
 
+            if ability["ability_type"] != "tp_bullet":
+                continue
 
+            if ability["collected"]:
+                continue
+
+            if self.rect.colliderect(ability["rect"]):
+                ability["collected"] = True
+
+                Settings.bullet_count -= 1
+                self.tp_enabled = True
+
+    def load_tp_bullet(self):
+        for ability in Tiles.abilities:
+            if ability["ability_type"] != "tp_bullet":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            screen.blit(tp_bullet,ability["rect"])   
+        
 
     def update(self):
 
@@ -686,13 +711,14 @@ class Player(pygame.sprite.Sprite):
         self.bullet_pickup()
         self.slow_time()
         self.gravity_swap()
+        self.tp_bullet_ability()
         
 
 
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, barrel_offset,angle):
+    def __init__(self, barrel_offset,angle,player):
         super().__init__()
 
         self.original_image = pygame.image.load("Images/BULLET.png").convert_alpha()
@@ -707,6 +733,8 @@ class Bullet(pygame.sprite.Sprite):
             direction = direction.normalize()
 
         self.velocity = direction * 19 #was15
+
+        self.player = player
 
     def kill_bad_guys(self):
         
@@ -748,7 +776,15 @@ class Bullet(pygame.sprite.Sprite):
                     if self.rect.colliderect(tile["rect"]):
                         Tiles.broken_tiles.add("Breakable")
 
-
+    def tp_player_to_bullets(self):
+        if self.player.tp_enabled:
+            for tile in Tiles.tiles:
+                if self.rect.colliderect(tile["rect"]):
+                    self.player.rect.center = self.rect.center
+                    self.player.pos = pygame.Vector2(self.player.rect.center)
+            
+                    self.player.tp_enabled = False
+    
                     
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
@@ -768,6 +804,7 @@ class Bullet(pygame.sprite.Sprite):
         self.kill_bad_guys()
         self.button_detection_bullets()
         self.break_tiles()
+        self.tp_player_to_bullets()
         
 ###############################################################################################################
 
@@ -838,10 +875,11 @@ def restart_all():
 
 
 player_group = pygame.sprite.GroupSingle()
-player_group.add(Player(start_x, start_y))
+
+player = Player(start_x, start_y)
+player_group.add(player)
 
 bullet_group = pygame.sprite.Group()
-
 #################################################################################################################
 #Game loop ONLY
 
@@ -890,10 +928,11 @@ while True:
                     if Settings.paused == False:
                         barrel = player_group.sprite.barrel_position()
                         if Settings.bullet_count < bullet_max:
-                            bullet = Bullet(barrel, player_group.sprite.angle)
+                            bullet = Bullet(barrel, player_group.sprite.angle, player_group.sprite)
                             bullet_group.add(bullet)
                             Settings.bullet_count += 1
                             gun_fired_fx.play()
+                            
                             player_group.sprite.recoil(bullet.velocity)
                             player_group.sprite.gravity_enabled = True
                             if Settings.playing_state == "start":
@@ -1030,6 +1069,7 @@ while True:
             player_group.sprite.bullet_pickup_load()
             player_group.sprite.slow_time_load()
             player_group.sprite.gravity_swap_load()
+            player_group.sprite.load_tp_bullet()
             
 
             for obj in Tiles.bad_guys:
