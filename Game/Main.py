@@ -18,7 +18,7 @@ game_clock = pygame.time.Clock()
 
 level_selection = button_generation(Settings.levels)
 check_boxes = Waiver.check_box_generation(screen, unchecked_box)
-map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req= Settings.level_load()
+map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req, bonus_time= Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
 mini_stars_list = create_mini_stars()
 dialogue = Dialogue.Dialogue()
@@ -572,7 +572,40 @@ class Player(pygame.sprite.Sprite):
 
             screen.blit(slow_time_surface,ability["rect"])   
 
-                
+    def bonus_time_star(self):
+
+        if Settings.level_stars[Settings.player_level - 1][0] == True:
+            return
+
+        if (timer.time_passed / 1000) <= bonus_time:
+            Settings.total_stars += 1
+            print("total", Settings.total_stars)
+            print(Settings.player_level)
+            Settings.level_stars[Settings.player_level - 1][0] = True
+
+    def normal_star(self):
+        if Settings.level_stars[Settings.player_level - 1][1] == True:
+            return
+
+        if self.polygon_collision(self.global_polygon, star_polygon):
+            Settings.total_stars += 1
+            print("total", Settings.total_stars)
+            print(Settings.player_level)
+            Settings.level_stars[Settings.player_level - 1][1] = True
+
+    def bonus_bullet_star(self):
+        if Settings.level_stars[Settings.player_level - 1][2] == True:
+            return
+
+        if Settings.bullet_count < bullet_max:
+            Settings.total_stars += 1
+            print("total", Settings.total_stars)
+            print(Settings.player_level)
+            Settings.level_stars[Settings.player_level - 1][2] = True
+
+           
+
+
 
     def update(self):
 
@@ -620,7 +653,8 @@ class Player(pygame.sprite.Sprite):
         self.button_detection_gun()
         self.rotation_reverse()
         self.bullet_pickup()
-        self.slow_time()
+        self.slow_time()#
+        
 
 
 
@@ -715,6 +749,7 @@ def restart_all():
     global star, star_rect, star_polygon
     global mini_stars_list
     global m_star_collected
+    global bonus_time
 
     player_group.sprite.reset_player()
 
@@ -732,7 +767,8 @@ def restart_all():
         m_stars,
         m_stars_required,
         kill_is_req,
-        kills_req
+        kills_req,
+        bonus_time
     ) = Settings.level_load()
 
     Settings.kill_count = 0
@@ -787,6 +823,10 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             match Settings.game_state:
                 case "start_menu":
+
+                    if dialogue.text_ended:
+                        dialogue.text_ended = False
+                
                     if start_button_rect.collidepoint(event.pos):
                         button_fx.play()
                 
@@ -875,12 +915,16 @@ while True:
                     continue
 
                 case "has_won":
+
+                    
+
                     if next_level_rect.collidepoint(event.pos):
                         Settings.player_level += 1
                         Settings.playing_state = "start"
                         Settings.game_state = "playing"
 
                         restart_all()
+                        
                     continue
 
                 case "getting_hint":
@@ -908,10 +952,9 @@ while True:
             screen.blit(level_button, level_button_rect2)
             screen.blit(hint_button, hint_button_rect)
             dialogue.chosen_dialogue()
-            dialogue.get_word_list()
             dialogue.display_text(screen)
             if start_music == True:
-                play_music()
+                #play_music()
                 start_music = False
 
         
@@ -1007,6 +1050,12 @@ while True:
             screen.blit(win_screen, win_screen_rect)
             screen.blit(next_level,next_level_rect)
             timer.display_timer(screen)
+            player_group.sprite.normal_star()
+            player_group.sprite.bonus_time_star()
+            player_group.sprite.bonus_bullet_star()
+
+            
+
             
             
             

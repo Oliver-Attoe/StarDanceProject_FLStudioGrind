@@ -37,11 +37,17 @@ class Stopwatch:
 
     def display_timer(self, screen):
 
+
         self.seconds = int((self.time_passed / 1000) % 60)
         self.milli = self.time_passed % 1000
 
-        timer_text_render = timer_text.render (f"{self.seconds} : {self.milli:02}", True, "Green")
-        timer_text_rect = timer_text_render.get_rect(center = (600, 75))
+        timer_text_render = timer_text.render(
+            f"{self.seconds}:{self.milli:03}",
+            True,
+            "Green"
+        )
+
+        timer_text_rect = timer_text_render.get_rect(center=(600, 75))
         screen.blit(timer_text_render, timer_text_rect)
 
 

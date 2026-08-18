@@ -15,6 +15,8 @@ slow_time_duration = 3000
 slow_time_start = 0
 slow_time_active = False
 
+total_stars = 0
+level_stars = [[False, False, False] for _ in range(levels)]
 
 def level_lock():
     global max_player_level
@@ -50,6 +52,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
+            bonus_time = 4
        
 
         case 2:
@@ -64,6 +67,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
+            bonus_time = 6
      
 
         case 3:
@@ -78,12 +82,12 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
+            bonus_time = 8
 
         case 4:
             map_file = "Maps/Level_4_map.tmx"#
             start_x = 200
             start_y = 550
-            
             bullet_max = 4
             goal_x = 700
             goal_y = 700
@@ -91,6 +95,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
+            bonus_time = 4
 
 
         case 5:
@@ -105,6 +110,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
+            bonus_time = 6
 
         case 6:
             map_file = "Maps/Level_6_map.tmx"
@@ -117,7 +123,8 @@ def level_load():
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
-            kills_req = 0
+            kills_req = 0#
+            bonus_time = 4
 
         case 7:
             map_file = "Maps/Level_7_map.tmx"
@@ -130,7 +137,8 @@ def level_load():
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
-            kills_req = 0#
+            kills_req = 0
+            bonus_time = 40
 
         case 8:
             map_file = "Maps/Level_8_map.tmx"
@@ -144,6 +152,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
+            bonus_time = 49
 
         case 9:
 
@@ -158,10 +167,11 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
+            bonus_time = 40
 
 
                
-    return map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req
+    return map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req, bonus_time
 
 def set_gun_image():
 
