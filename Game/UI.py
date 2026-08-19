@@ -95,6 +95,8 @@ gravity_swap_surface = pygame.image.load("Images/Gravity_swap.png")
 
 tp_bullet = pygame.image.load("Images/tp_bullet.png")
 
+ghost_bullet = pygame.image.load("Images/ghost_bullet.png")
+
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
         super().__init__()

@@ -82,6 +82,8 @@ class Player(pygame.sprite.Sprite):
 
         self.tp_enabled = False
 
+        self.ghost_enabled = False
+
 
     def follow_mouse(self):
         self.m_pos = pygame.mouse.get_pos()
@@ -449,6 +451,7 @@ class Player(pygame.sprite.Sprite):
         self.goal_progress = 0
         self.gravity_flip =  1
         self.tp_enabled = False
+        self.ghost_enabled = False
 
     def kill_bad_guys(self):
         
@@ -660,7 +663,32 @@ class Player(pygame.sprite.Sprite):
             if ability["collected"]:
                 continue
 
-            screen.blit(tp_bullet,ability["rect"])   
+            screen.blit(tp_bullet,ability["rect"])  
+
+    def ghost_bullet(self):
+        for ability in Tiles.abilities:
+
+            if ability["ability_type"] != "ghost_bullet":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            if self.rect.colliderect(ability["rect"]):
+                ability["collected"] = True
+                self.ghost_enabled = True
+
+    def ghost_bullet_load(self):
+        for ability in Tiles.abilities:
+            if ability["ability_type"] != "ghost_bullet":
+                continue
+
+            if ability["collected"]:
+                continue
+
+            screen.blit(ghost_bullet,ability["rect"]) 
+
+
         
 
     def update(self):
@@ -712,6 +740,7 @@ class Player(pygame.sprite.Sprite):
         self.slow_time()
         self.gravity_swap()
         self.tp_bullet_ability()
+        self.ghost_bullet()
         
 
 
@@ -735,6 +764,12 @@ class Bullet(pygame.sprite.Sprite):
         self.velocity = direction * 19 #was15
 
         self.player = player
+
+
+        self.ghost = player.ghost_enabled
+
+        if player.ghost_enabled:
+            player.ghost_enabled = False
 
     def kill_bad_guys(self):
         
@@ -784,8 +819,11 @@ class Bullet(pygame.sprite.Sprite):
                     self.player.pos = pygame.Vector2(self.player.rect.center)
             
                     self.player.tp_enabled = False
+
+
+
     
-                    
+
     def update(self):
         self.image = pygame.transform.rotate(self.original_image, self.angle -180)
         
@@ -795,11 +833,21 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.velocity.x * Settings.time_multiplyer
         self.rect.y += self.velocity.y * Settings.time_multiplyer
 
-        for tile in Tiles.tiles:
+        if not self.ghost:
+            for tile in Tiles.tiles:
+                if self.rect.colliderect(tile["rect"]):
+                    self.kill()
+                    break
 
+                    
 
-            if self.rect.colliderect(tile["rect"]):
-                self.kill()
+        if (
+        self.rect.right < 0
+        or self.rect.left > 1200
+        or self.rect.bottom < 0
+        or self.rect.top > 800
+        ):
+            self.kill()
 
         self.kill_bad_guys()
         self.button_detection_bullets()
@@ -932,7 +980,7 @@ while True:
                             bullet_group.add(bullet)
                             Settings.bullet_count += 1
                             gun_fired_fx.play()
-                            
+
                             player_group.sprite.recoil(bullet.velocity)
                             player_group.sprite.gravity_enabled = True
                             if Settings.playing_state == "start":
@@ -1070,6 +1118,7 @@ while True:
             player_group.sprite.slow_time_load()
             player_group.sprite.gravity_swap_load()
             player_group.sprite.load_tp_bullet()
+            player_group.sprite.ghost_bullet_load()
             
 
             for obj in Tiles.bad_guys:
