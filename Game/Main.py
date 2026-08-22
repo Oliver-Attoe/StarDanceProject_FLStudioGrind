@@ -23,6 +23,7 @@ star, star_rect, star_polygon = create_star(goal_x, goal_y)
 mini_stars_list = create_mini_stars()
 dialogue = Dialogue.Dialogue()
 
+
 timer = Timer.Stopwatch()
 
 m_star_collected = False
@@ -86,36 +87,37 @@ class Player(pygame.sprite.Sprite):
 
 
     def follow_mouse(self):
-        self.m_pos = pygame.mouse.get_pos()
+        if Dialogue.dialogue_active[Settings.player_level - 1][0] == False:
+            self.m_pos = pygame.mouse.get_pos()
 
-        x_dist = self.m_pos[0] - self.rect.centerx
-        y_dist = -(self.m_pos[1] - self.rect.centery)
+            x_dist = self.m_pos[0] - self.rect.centerx
+            y_dist = -(self.m_pos[1] - self.rect.centery)
 
-        self.angle = math.degrees(math.atan2(y_dist, x_dist))
+            self.angle = math.degrees(math.atan2(y_dist, x_dist))
 
     def retical_line(self):
-    #line starts at barrel, ends at mouse location
+        if Dialogue.dialogue_active[Settings.player_level - 1][0] == False:
 
-        barrel = self.barrel_position()
-        mouse = pygame.mouse.get_pos()
+            barrel = self.barrel_position()
+            mouse = pygame.mouse.get_pos()
 
-        dx = mouse[0] - barrel[0]
-        dy = mouse[1] - barrel[1]
+            dx = mouse[0] - barrel[0]
+            dy = mouse[1] - barrel[1]
 
-        hypotenuse_length = math.hypot(dx, dy)
+            hypotenuse_length = math.hypot(dx, dy)
 
-        if hypotenuse_length == 0:
-            return
+            if hypotenuse_length == 0:
+                return
 
-        direction_x = dx / hypotenuse_length
-        direction_y = dy / hypotenuse_length
+            direction_x = dx / hypotenuse_length
+            direction_y = dy / hypotenuse_length
 
-        for c in range(0, int(hypotenuse_length), 15):
-            hyp_x = barrel[0] + direction_x * c
-            hyp_y = barrel[1] + direction_y * c
+            for c in range(0, int(hypotenuse_length), 15):
+                hyp_x = barrel[0] + direction_x * c
+                hyp_y = barrel[1] + direction_y * c
 
-            pygame.draw.circle(screen, "white", (int(hyp_x), int(hyp_y)), 3)
-            #pygame.draw.circle(screen, "red", barrel, 5)
+                pygame.draw.circle(screen, "white", (int(hyp_x), int(hyp_y)), 3)
+                #pygame.draw.circle(screen, "red", barrel, 5)
            
     def barrel_position(self):
         rotated_offset = self.barrel_offset.rotate(-(self.angle))
@@ -640,6 +642,29 @@ class Player(pygame.sprite.Sprite):
             Settings.total_stars += 1
             Settings.level_stars[Settings.player_level - 1][2] = True
 
+    def level_start_dialogue(self):
+        if Dialogue.dialogue_active[Settings.player_level - 1][0] == False:
+            return False
+
+        if Dialogue.dialogue_active[Settings.player_level - 1][0] == True:
+            Dialogue.dialogue_active[Settings.player_level - 1][0] = False
+            return True
+
+    def level_won_dialogue(self):
+        if Dialogue.dialogue_active[Settings.player_level - 1][1] == False:
+            return False
+
+        if Dialogue.dialogue_active[Settings.player_level - 1][1] == True:
+            Dialogue.dialogue_active[Settings.player_level - 1][1] = False
+            return True
+        
+            
+
+
+
+        
+            
+
     def tp_bullet_ability(self):
         for ability in Tiles.abilities:
 
@@ -939,12 +964,13 @@ while True:
             exit()
     
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+
+
             match Settings.game_state:
                 case "start_menu":
 
-                    if dialogue.text_ended:
-                        dialogue.text_ended = False
-                
+                    
+
                     if start_button_rect.collidepoint(event.pos):
                         button_fx.play()
                 
@@ -967,13 +993,15 @@ while True:
             
                 case"playing":
 
+                    dialogue_clicked = player_group.sprite.level_start_dialogue()
 
                     if pause_rect.collidepoint(event.pos):
                         Settings.paused = True
                         timer.pause()
 
 
-                    if Settings.paused == False:
+                    if Settings.paused == False and dialogue_clicked != True:
+                        
                         barrel = player_group.sprite.barrel_position()
                         if Settings.bullet_count < bullet_max:
                             bullet = Bullet(barrel, player_group.sprite.angle, player_group.sprite)
@@ -1035,14 +1063,18 @@ while True:
 
                 case "has_won":
 
-                    
+                    dialogue_clicked2 = player_group.sprite.level_won_dialogue()
 
-                    if next_level_rect.collidepoint(event.pos):
-                        Settings.player_level += 1
-                        Settings.playing_state = "start"
-                        Settings.game_state = "playing"
+                    if dialogue_clicked2 != True:
 
-                        restart_all()
+
+
+                        if next_level_rect.collidepoint(event.pos):
+                            Settings.player_level += 1
+                            Settings.playing_state = "start"
+                            Settings.game_state = "playing"
+
+                            restart_all()
                         
                     continue
 
@@ -1070,8 +1102,10 @@ while True:
             screen.blit(s_text, s_text_rect)
             screen.blit(level_button, level_button_rect2)
             screen.blit(hint_button, hint_button_rect)
-            dialogue.chosen_dialogue()
-            dialogue.display_text(screen)
+            
+            
+
+            
             if start_music == True:
                 #play_music()
                 start_music = False
@@ -1080,6 +1114,8 @@ while True:
         case "playing":
 
 
+
+            
             if start_music == False:
                 pygame.mixer.music.stop()
 
@@ -1125,9 +1161,11 @@ while True:
                 if not obj["killed"]:
                     screen.blit(bad_guy_surface, obj["rect"])
 
-
-                
-
+            if Dialogue.dialogue_active[Settings.player_level - 1][0] == True:  
+                dialogue.get_chosen_dialogue()
+                dialogue.get_word_list()
+                dialogue.display_text_bg()
+                dialogue.display_text()
         
             match Settings.playing_state:
                 case "start":
@@ -1169,12 +1207,25 @@ while True:
         case "has_won":
             Settings.level_lock()
 
+
+            
+
             screen.blit(win_screen, win_screen_rect)
             screen.blit(next_level,next_level_rect)
             timer.display_timer(screen)
             player_group.sprite.normal_star()
             player_group.sprite.bonus_time_star()
             player_group.sprite.bonus_bullet_star()
+
+            if Dialogue.dialogue_active[Settings.player_level - 1][1] == True:  
+                dialogue.get_chosen_dialogue()
+                dialogue.get_word_list()
+                dialogue.display_text_bg()
+                dialogue.display_text()
+
+        
+
+            
 
             
 

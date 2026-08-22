@@ -1,10 +1,12 @@
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
-from SOUNDS import voice_blip
+from SOUNDS import new_voice_blip
+from Settings import levels
 import random
 
 dialogue_option = 1
+dialogue_active = [[True,True] for _ in range(levels)]
 
 
 
@@ -17,102 +19,67 @@ class Dialogue(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(600, 675))
 
         self.text = ""
-
-        self.letter_list = []
+        self.word_list = []
 
         self.font = pygame.font.Font(
             "Images/undertale_font.ttf",
             50
         )
 
-        self.text_delay = 150
-        self.last_letter_time = pygame.time.get_ticks()
+        self.text_delay = 210
+        self.last_word_time = pygame.time.get_ticks()
 
-        self.letter_index = 0
-        self.text_ended = False
+        self.word_index = 0
+        self.visible_words = []
 
-    def chosen_dialogue(self):
+        self.x = self.rect.topleft[0] + 40
+        self.y = self.rect.topleft[1] + 25
 
+    def get_chosen_dialogue(self):
         match dialogue_option:
             case 1:
-                self.text = (
-                    "Wow it is working, call me Toby fox the way I make these text boxes, this took too long, little side quest, "
-                    "it should be a new screen now i hope???? "
-                    "This is more text that should continue onto the next "
-                    "page rather than starting from the beginning."
-                )
+                self.text = "This is a text, I hope this is working and i hate evil cats and dogs becuase iDK is this text wrapping I hope so"
 
-        self.letter_list = self.text.split(" ")
 
-    def display_text(self, screen):
+    def get_word_list(self):
+        self.word_list = self.text.split(" ")
+        
 
-        x = self.rect.topleft[0] + 40
-        y = self.rect.topleft[1] + 25
+    def display_text_bg(self):
+        if self.word_index > 0:
+            if self.x == self.rect.topleft[0] + 40 and self.y == self.rect.topleft[1] + 25:
+                screen.blit(self.image, self.rect)
 
+
+    def display_text(self):
         current_time = pygame.time.get_ticks()
 
-        screen.blit(self.image, self.rect)
+        if self.word_index < len(self.word_list):
+            if current_time - self.last_word_time >= self.text_delay:
+                self.word_index += 1
+                self.last_word_time = current_time
+        else:
+            new_voice_blip.stop()
 
-        current_x = x
-        current_y = y
+        x = self.rect.topleft[0] + 40
+        y = self.rect.topleft[1] + 15
 
-        words_drawn = 0
+        for word in self.word_list[:self.word_index]:
+            font_render = self.font.render(word, True, "White")
+            word_width = font_render.get_width()
 
-        for word in self.letter_list[:self.letter_index]:
+            if x + word_width >= 1000:
+                y += 60
+                x = self.rect.topleft[0] + 40
 
-            word_surface = self.font.render(
-                word + " ",
-                True,
-                (255, 255, 255)
-            )
+            if y >= 770:
+                x = self.rect.topleft[0] + 40
+                y = self.rect.topleft[1] + 25
+                screen.blit(self.image, self.rect)
 
-            word_width = word_surface.get_width()
 
-            if current_x + word_width > self.rect.right - 40:
-                current_x = x
-                current_y += 70
+            screen.blit(font_render, (x, y))
+            new_voice_blip.play()
+            new_voice_blip.set_volume(0.1)
 
-            if current_y > 700:
-                break
-
-            screen.blit(word_surface, (current_x, current_y))
-
-            current_x += word_width
-            words_drawn += 1
-
-        if not self.text_ended:
-
-            if (
-                self.letter_index < len(self.letter_list)
-                and current_time - self.last_letter_time >= self.text_delay
-            ):
-                self.letter_index += 1
-                self.last_letter_time = current_time
-                voice_blip.play()
-
-        current_x = x
-        current_y = y
-
-        for word in self.letter_list[:self.letter_index]:
-
-            word_surface = self.font.render(
-                word + " ",
-                True,
-                (255, 255, 255)
-            )
-
-            word_width = word_surface.get_width()
-
-            if current_x + word_width > self.rect.right - 40:
-                current_x = x
-                current_y += 70
-
-            if current_y > 700:
-                self.text_ended = True
-                break
-
-            current_x += word_width
-
-        if self.letter_index >= len(self.letter_list):
-            self.text_ended = True
-            voice_blip.stop()
+            x += word_width + 20
