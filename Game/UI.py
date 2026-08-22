@@ -97,6 +97,10 @@ tp_bullet = pygame.image.load("Images/tp_bullet.png")
 
 ghost_bullet = pygame.image.load("Images/ghost_bullet.png")
 
+gun_select = pygame.image.load("Images/gun_select.png")
+gun_select_rect = gun_select.get_rect(midbottom = (600, 800))
+gun_select_bg = pygame.image.load("Images/gun_select_BG.png")
+
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
         super().__init__()
@@ -110,9 +114,19 @@ class Level_select(pygame.sprite.Sprite):
 
         self.image.blit(level_button_numb, text_rect)
 
+class Gun_select(pygame.sprite.Sprite):
+    def __init__(self,gun, x, y):
+        super().__init__()
+###############################CHANGE BUTTONS LATER PLEASE, AND THE NUMBERS DISPLAYED ONTO #############################
+        self.image = pygame.image.load("Images/Level_button.png")
+        self.rect = self.image.get_rect(center = (x,y))
+        self.gun = gun
+
+
         
 
 level_group = pygame.sprite.Group()
+gun_group = pygame.sprite.Group()
         
 def button_generation(levels):            
         
@@ -208,7 +222,28 @@ def create_mini_stars():
 
 
 
+def gun_button_generation():            
+        
 
+        x = 360
+        y = 330
+
+        for gun_number in range(10):
+            gun_button = Gun_select(gun_number, x, y)
+            gun_group.add(gun_button)
+            x += 120
+            if x >= 960:
+                x = 360
+                y += 120
+
+            
+
+        return gun_group
+
+#def lock_gun_image(max_player_level):
+    #for level_button in level_group:
+        #if level_button.level > max_player_level:
+           # screen.blit(locked_surface, level_button.rect)
 
 
 

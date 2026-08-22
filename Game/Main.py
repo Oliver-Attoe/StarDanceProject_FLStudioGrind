@@ -17,6 +17,7 @@ screen = pygame.display.set_mode((1200, 800))
 game_clock = pygame.time.Clock()
 
 level_selection = button_generation(Settings.levels)
+gun_selection = gun_button_generation()
 check_boxes = Waiver.check_box_generation(screen, unchecked_box)
 map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req, bonus_time= Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
@@ -990,6 +991,9 @@ while True:
 
                     if hint_button_rect.collidepoint(event.pos):
                         Settings.game_state = "getting_hint"
+
+                    if gun_select_rect.collidepoint(event.pos):
+                        Settings.game_state = "gun_select"
             
                 case"playing":
 
@@ -1050,6 +1054,16 @@ while True:
                                 Settings.paused = False
                                 player_group.sprite.load_room()
 
+                case "gun_select":
+                    for button in gun_selection:
+
+                        if button.rect.collidepoint(event.pos):
+                            if Settings.total_stars >= button.gun * 6:
+                                Settings.gun = button.gun + 1
+                                player_group.sprite.change_gun()
+                                Settings.game_state = "start_menu"
+
+
 
 
                 case "lost":
@@ -1102,6 +1116,7 @@ while True:
             screen.blit(s_text, s_text_rect)
             screen.blit(level_button, level_button_rect2)
             screen.blit(hint_button, hint_button_rect)
+            screen.blit(gun_select, gun_select_rect)
             
             
 
@@ -1194,11 +1209,6 @@ while True:
                                 Settings.slow_time_active = False
                         
 
-
-
-
-
-
         case "lost":
             screen.blit(loss_screen, loss_screen_rect)
             screen.blit(restart_button, restart_button_rect)
@@ -1223,23 +1233,14 @@ while True:
                 dialogue.display_text_bg()
                 dialogue.display_text()
 
-        
-
-            
-
-            
-
-            
-            
-            
-
-        
+#
         case "selecting_level":
             Settings.paused = False
             screen.blit(level_select_BG, (0,0))
             level_selection.draw(screen)
 
             lock_level_image(Settings.max_player_level)
+
 
         case "getting_hint":
             screen.blit(hint_bg, (0,0))
@@ -1257,6 +1258,10 @@ while True:
             else:
                 Settings.signing = False
 
+
+        case "gun_select":
+            screen.blit(gun_select_bg, (0,0))
+            gun_selection.draw(screen)
 
     
     if Settings.paused:
