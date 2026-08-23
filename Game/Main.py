@@ -644,21 +644,18 @@ class Player(pygame.sprite.Sprite):
             Settings.level_stars[Settings.player_level - 1][2] = True
 
     def level_start_dialogue(self):
-        if Dialogue.dialogue_active[Settings.player_level - 1][0] == False:
-            return False
 
-        if Dialogue.dialogue_active[Settings.player_level - 1][0] == True:
+        if Dialogue.dialogue_active[Settings.player_level - 1][0]:
+            dialogue.start_dialogue("start")
             Dialogue.dialogue_active[Settings.player_level - 1][0] = False
-            return True
+            
+
 
     def level_won_dialogue(self):
-        if Dialogue.dialogue_active[Settings.player_level - 1][1] == False:
-            return False
 
-        if Dialogue.dialogue_active[Settings.player_level - 1][1] == True:
+        if Dialogue.dialogue_active[Settings.player_level - 1][1]:
+            dialogue.start_dialogue("won")
             Dialogue.dialogue_active[Settings.player_level - 1][1] = False
-            return True
-        
             
 
 
@@ -715,8 +712,6 @@ class Player(pygame.sprite.Sprite):
             screen.blit(ghost_bullet,ability["rect"]) 
 
 
-        
-
     def update(self):
 
         self.celling_hit = False
@@ -768,8 +763,6 @@ class Player(pygame.sprite.Sprite):
         self.tp_bullet_ability()
         self.ghost_bullet()
         
-
-
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -947,6 +940,12 @@ def restart_all():
     
     Tiles.load_level(map_file)
 
+    
+    dialogue.word_index = 0
+    dialogue.last_word_time = pygame.time.get_ticks()
+    dialogue.text = ""
+    dialogue.word_list = []
+
 
 player_group = pygame.sprite.GroupSingle()
 
@@ -977,6 +976,7 @@ while True:
                 
                         Settings.game_state = "playing"
                         Settings.playing_state = "start"
+                        
                 
 
                     if Settings.paused == True:
@@ -997,14 +997,19 @@ while True:
             
                 case"playing":
 
-                    dialogue_clicked = player_group.sprite.level_start_dialogue()
+
+                    if dialogue.active:
+                        if dialogue.word_index >= len(dialogue.word_list):
+                            dialogue.active = False
+
+                        continue
 
                     if pause_rect.collidepoint(event.pos):
                         Settings.paused = True
                         timer.pause()
 
 
-                    if Settings.paused == False and dialogue_clicked != True:
+                    if Settings.paused == False:
                         
                         barrel = player_group.sprite.barrel_position()
                         if Settings.bullet_count < bullet_max:
@@ -1077,18 +1082,21 @@ while True:
 
                 case "has_won":
 
-                    dialogue_clicked2 = player_group.sprite.level_won_dialogue()
+                    if dialogue.active:
+                        if dialogue.word_index >= len(dialogue.word_list):
+                            dialogue.active = False
+                        continue
 
-                    if dialogue_clicked2 != True:
 
 
+                    if next_level_rect.collidepoint(event.pos):
+                        Settings.player_level += 1
 
-                        if next_level_rect.collidepoint(event.pos):
-                            Settings.player_level += 1
-                            Settings.playing_state = "start"
-                            Settings.game_state = "playing"
+                        
+                        Settings.playing_state = "start"
+                        Settings.game_state = "playing"
 
-                            restart_all()
+                        restart_all()
                         
                     continue
 
@@ -1129,7 +1137,7 @@ while True:
         case "playing":
 
 
-
+            
             
             if start_music == False:
                 pygame.mixer.music.stop()
@@ -1176,18 +1184,23 @@ while True:
                 if not obj["killed"]:
                     screen.blit(bad_guy_surface, obj["rect"])
 
-            if Dialogue.dialogue_active[Settings.player_level - 1][0] == True:  
-                dialogue.get_chosen_dialogue()
-                dialogue.get_word_list()
+            if dialogue.active:
                 dialogue.display_text_bg()
                 dialogue.display_text()
         
             match Settings.playing_state:
                 case "start":
                     if not Settings.paused:
-                        restart_all()
-                        player_group.sprite.follow_mouse()
-                        player_group.sprite.retical_line()
+                        player_group.sprite.reset_player()
+                        
+                        player_group.sprite.level_start_dialogue()
+                        
+
+                        if not dialogue.active:
+                            
+                            player_group.sprite.follow_mouse()
+                            player_group.sprite.retical_line()
+
                     
 
                 case "in_proggress":
@@ -1218,6 +1231,7 @@ while True:
             Settings.level_lock()
 
 
+
             
 
             screen.blit(win_screen, win_screen_rect)
@@ -1227,13 +1241,13 @@ while True:
             player_group.sprite.bonus_time_star()
             player_group.sprite.bonus_bullet_star()
 
-            if Dialogue.dialogue_active[Settings.player_level - 1][1] == True:  
-                dialogue.get_chosen_dialogue()
-                dialogue.get_word_list()
+            if dialogue.active:
                 dialogue.display_text_bg()
                 dialogue.display_text()
 
-#
+            player_group.sprite.level_won_dialogue()
+
+
         case "selecting_level":
             Settings.paused = False
             screen.blit(level_select_BG, (0,0))
@@ -1262,6 +1276,7 @@ while True:
         case "gun_select":
             screen.blit(gun_select_bg, (0,0))
             gun_selection.draw(screen)
+            lock_gun_image(Settings.total_stars)
 
     
     if Settings.paused:

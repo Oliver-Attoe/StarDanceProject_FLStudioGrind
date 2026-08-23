@@ -1,7 +1,7 @@
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
-from Settings import levels, max_player_level, gun
+from Settings import levels, max_player_level, gun, total_stars
 
 
 
@@ -240,10 +240,11 @@ def gun_button_generation():
 
         return gun_group
 
-#def lock_gun_image(max_player_level):
-    #for level_button in level_group:
-        #if level_button.level > max_player_level:
-           # screen.blit(locked_surface, level_button.rect)
+def lock_gun_image(total_stars):
+    for button in gun_group:
+        if total_stars < button.gun * 6:
+           screen.blit(locked_surface, button.rect)
+
 
 
 
