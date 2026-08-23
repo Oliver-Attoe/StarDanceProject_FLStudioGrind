@@ -101,6 +101,11 @@ gun_select = pygame.image.load("Images/gun_select.png")
 gun_select_rect = gun_select.get_rect(midbottom = (600, 800))
 gun_select_bg = pygame.image.load("Images/gun_select_BG.png")
 
+go_back = pygame.image.load("Images/Go_back.png")
+go_back_rect = go_back.get_rect(topright = (1200, 0))
+
+waiver_text_box = pygame.Rect(900, 200, 250, 500)
+
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
         super().__init__()

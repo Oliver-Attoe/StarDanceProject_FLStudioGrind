@@ -1106,6 +1106,22 @@ while True:
                             laugh.play()
                             box.checked = True
 
+                    if go_back_rect.collidepoint(event.pos):
+                        Settings.game_state ="start_menu"
+
+                    if waiver_text_box.collidepoint(event.pos):
+                        Waiver.text_active = True
+                        print ("contact made")
+                    else:
+                        Waiver.text_active = False
+
+
+
+        if event.type == pygame.KEYDOWN and Waiver.text_active:
+            Waiver.letters.append(event.unicode)
+            print(event.unicode)
+                       
+
 
 
 
@@ -1259,6 +1275,7 @@ while True:
         case "getting_hint":
             screen.blit(hint_bg, (0,0))
             screen.blit(Waiver.signature_surface, Waiver.signature_rect)
+            screen.blit(go_back, go_back_rect)
             check_boxes.draw(screen)
             screen.blit(waiver_text_render, waiver_rect)
             for box in check_boxes:
@@ -1271,6 +1288,8 @@ while True:
                 Settings.signing = True
             else:
                 Settings.signing = False
+
+            Waiver.text_box()
 
 
         case "gun_select":

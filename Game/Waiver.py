@@ -1,9 +1,13 @@
 import pygame
-from UI import checked_box
+from UI import checked_box, screen, waiver_text_box
 
 last_position = None
 signature_surface = pygame.Surface((500, 250), pygame.SRCALPHA)
 signature_rect = signature_surface.get_rect(topleft=(50, 500))
+
+text_active = True
+letters = []
+new_waiver_text = pygame.font.Font("Images/Times_new.ttf", 30)
 
 def draw_signature(signing):
     global last_position
@@ -63,9 +67,28 @@ def check_box_generation(screen, unchecked_box):
 
         return check_box_group 
 
+class Text_box(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+
 
         
+def text_box():
+    x = waiver_text_box.midleft[0] + 10
+    y = waiver_text_box.midtop[1] + 10
+    if text_active:
+        for letter in letters:
+            font_render = new_waiver_text.render(letter, True, "Black")
+            screen.blit(font_render, (x,y))
+            x += 18
 
+            if x >= waiver_text_box.midright[0] - 10:
+                y += 35
+                x = waiver_text_box.midleft[0] + 10
+
+
+     
 
 
 
