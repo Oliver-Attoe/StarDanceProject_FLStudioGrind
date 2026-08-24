@@ -9,6 +9,7 @@ import Tiles
 import random
 import Waiver
 import Dialogue
+import webbrowser
 #Imports ONLY
 ###############################################################################################################
 
@@ -1111,15 +1112,34 @@ while True:
 
                     if waiver_text_box.collidepoint(event.pos):
                         Waiver.text_active = True
-                        print ("contact made")
+                        Waiver.text_visible = True
+                        
                     else:
                         Waiver.text_active = False
+
+                    feild_count = Waiver.all_fields_filled()
+
+                    if feild_count >= 5:
+                        if get_hint_rect.collidepoint(event.pos):
+                            webbrowser.open("https://youtu.be/dQw4w9WgXcQ?si=tpj35XmZbQUUiyly")
+
 
 
 
         if event.type == pygame.KEYDOWN and Waiver.text_active:
-            Waiver.letters.append(event.unicode)
-            print(event.unicode)
+            if event.key == pygame.K_BACKSPACE:
+                Waiver.text = Waiver.text[:-1]
+
+            elif event.key == pygame.K_RETURN:
+                Waiver.text += "\n"
+
+            else:
+                Waiver.text += event.unicode
+
+            if Waiver.text.strip() != "":
+                Waiver.text_field_filled = True
+            else:
+                Waiver.text_field_filled = False
                        
 
 
@@ -1278,14 +1298,16 @@ while True:
             screen.blit(go_back, go_back_rect)
             check_boxes.draw(screen)
             screen.blit(waiver_text_render, waiver_rect)
+            screen.blit(get_hint_surface, get_hint_rect)
             for box in check_boxes:
                 if box.checked:
                     screen.blit(checked_box, box.rect)
             
 
-            if pygame.mouse.get_pressed()[0]:
+            if pygame.mouse.get_pressed()[0] and Waiver.signature_rect.collidepoint(pygame.mouse.get_pos()):
                 Waiver.draw_signature(Settings.signing)
                 Settings.signing = True
+                Waiver.sig_field_filled = True
             else:
                 Settings.signing = False
 
@@ -1309,6 +1331,7 @@ while True:
 
     
 
+    
     
     
     pygame.display.update()

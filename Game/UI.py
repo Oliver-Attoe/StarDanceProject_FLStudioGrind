@@ -106,6 +106,9 @@ go_back_rect = go_back.get_rect(topright = (1200, 0))
 
 waiver_text_box = pygame.Rect(900, 200, 250, 500)
 
+get_hint_surface = pygame.image.load("Images/Get_hint.png")
+get_hint_rect = get_hint_surface.get_rect(bottomright = (1180, 780))
+
 class Level_select(pygame.sprite.Sprite):
     def __init__(self, level, x, y):
         super().__init__()

@@ -4,10 +4,15 @@ from UI import checked_box, screen, waiver_text_box
 last_position = None
 signature_surface = pygame.Surface((500, 250), pygame.SRCALPHA)
 signature_rect = signature_surface.get_rect(topleft=(50, 500))
+sig_field_filled = False
+text_field_filled = False
 
 text_active = True
-letters = []
+text_visible = True
+text = ""
 new_waiver_text = pygame.font.Font("Images/Times_new.ttf", 30)
+
+
 
 def draw_signature(signing):
     global last_position
@@ -67,30 +72,54 @@ def check_box_generation(screen, unchecked_box):
 
         return check_box_group 
 
-class Text_box(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
+
+
 
 
 
         
 def text_box():
-    x = waiver_text_box.midleft[0] + 10
-    y = waiver_text_box.midtop[1] + 10
-    if text_active:
-        for letter in letters:
-            font_render = new_waiver_text.render(letter, True, "Black")
-            screen.blit(font_render, (x,y))
-            x += 18
+    if not text_visible:
+        return
 
-            if x >= waiver_text_box.midright[0] - 10:
+    x = waiver_text_box.left + 10
+    y = waiver_text_box.top + 10
+
+    lines = text.split("\n")
+
+    for line in lines:
+        words = line.split(" ")
+
+        for word in words:
+            font_render = new_waiver_text.render(word, True, "Black")
+            word_width = font_render.get_width()
+
+            if x + word_width > waiver_text_box.right - 10:
+                x = waiver_text_box.left + 10
                 y += 35
-                x = waiver_text_box.midleft[0] + 10
 
+            if y + font_render.get_height() <= waiver_text_box.bottom - 10:
+                screen.blit(font_render, (x, y))
 
-     
+            x += word_width
+            x += new_waiver_text.size(" ")[0]
 
+        x = waiver_text_box.left + 10
+        y += 35
 
+def all_fields_filled():
+    field_count = 0
 
+    for box in check_box_group:
+        if box.checked:
+            field_count += 1
+
+    if sig_field_filled:
+        field_count += 1
+
+    if text_field_filled:
+        field_count += 1
+
+    return field_count
 
 
