@@ -22,7 +22,7 @@ gun_selection = gun_button_generation()
 check_boxes = Waiver.check_box_generation(screen, unchecked_box)
 map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_required, kill_is_req, kills_req, bonus_time= Settings.level_load()
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
-mini_stars_list = create_mini_stars()
+
 dialogue = Dialogue.Dialogue()
 
 
@@ -32,7 +32,7 @@ m_star_collected = False
 
 Tiles.load_level(map_file)
 
-#Class's ONLY
+###Class's ONLY###
 #################################################################################################################
 class Player(pygame.sprite.Sprite):
 
@@ -129,7 +129,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity -= velocity * 1.5
 
     def in_air_rotate(self):
-        self.angle += self.rot_speed * Settings.time_multiplyer
+        self.angle += self.rot_speed * Settings.time_multiplyer * 0.75
 
     def rotate_image(self):
         self.image = pygame.transform.rotate(
@@ -366,27 +366,7 @@ class Player(pygame.sprite.Sprite):
 
                 self.velocity = pygame.Vector2(0, 0)          
 
-    def mini_star_load(self):
-
-        if m_stars:
-            for star in mini_stars_list:
-
-
-                if star["collected"]:
-                    continue
-                    
-                screen.blit(mini_star ,star["rect"])
-
-                collided, response = self.polygon_collision(
-                    self.global_polygon,
-                    star["polygon"]
-                )
-
-                if collided:
-                    star["collected"] = True
-                    self.goal_progress += 1
-                    print("collision detected:", self.goal_progress)
-
+    
     def portal_collision(self):
 
         if self.portal_cooldown > 0:
@@ -409,9 +389,14 @@ class Player(pygame.sprite.Sprite):
                         rotation_difference = entry_angle - exit_angle
                     else:
                         rotation_difference = -(entry_angle - exit_angle)
+
                     self.velocity.rotate_ip(rotation_difference)
+
                     self.pos = pygame.Vector2(destination["rect"].center)
-                    self.portal_cooldown = 30
+                    self.rect.center = self.pos
+                    self.get_global_polygon()
+
+                    self.portal_cooldown = 90
 
     def clock_image_load(self):
         for clock in Tiles.abilities:
@@ -431,7 +416,7 @@ class Player(pygame.sprite.Sprite):
             if clock["collected"]:
                 continue
             
-            if self.rect.colliderect(clock["rect"]):
+            if math.dist(self.rect.center, clock["rect"].center) < 40:
                 clock["collected"] = True
                 self.frozen = True            
 
@@ -446,16 +431,33 @@ class Player(pygame.sprite.Sprite):
 
     def reset_player(self):
 
+        # Position
         self.pos = pygame.Vector2(start_x, start_y)
         self.rect.center = (start_x, start_y)
+
+        # Movement / physics
         self.velocity = pygame.Vector2(0, 0)
         self.gravity_enabled = False
-        self.frozen = False
+        self.gravity_flip = 1
+
+        # Rotation
+        self.angle = 0
         self.rot_speed = 0
-        self.goal_progress = 0
-        self.gravity_flip =  1
+        self.rotation_direction = 1
+
+        # Abilities
         self.tp_enabled = False
         self.ghost_enabled = False
+        self.frozen = False
+
+        # Level progress
+        self.goal_progress = 0
+
+        # Portal
+        self.portal_cooldown = 0
+
+        # Collision polygon
+        self.get_global_polygon()
 
     def kill_bad_guys(self):
         
@@ -468,23 +470,50 @@ class Player(pygame.sprite.Sprite):
                 obj["killed"] = True
                 Settings.kill_count += 1
 
+
+
     def load_buttons(self):
 
         for button in Tiles.buttons:
 
-           
             if button["pressed"]:
                 continue
 
-            
             if button["name"] == "purple_button":
-                screen.blit(purple_button, button["rect"])
+                image = purple_button
 
             elif button["name"] == "green_button":
-                screen.blit(green_button, button["rect"])
+                image = green_button
 
             elif button["name"] == "white_button":
-                screen.blit(white_button, button["rect"])
+                image = white_button
+
+            else:
+                continue
+
+            rotation = button["rotation"]
+
+            rotated_image = pygame.transform.rotate(
+                image,
+                -rotation
+            )
+
+            x = button["rect"].x
+            y = button["rect"].y
+
+            if rotation == 90:
+                x -= rotated_image.get_width()
+
+            elif rotation == 180:
+                x -= rotated_image.get_width()
+                y -= rotated_image.get_height()
+
+            elif rotation == 270:
+                y -= rotated_image.get_height()
+
+            screen.blit(rotated_image, (x, y))
+
+
 
     def button_detection_gun(self):
 
@@ -492,8 +521,24 @@ class Player(pygame.sprite.Sprite):
 
             if button["pressed"]:
                 continue
-            
-            if self.rect.colliderect(button["rect"]):
+
+            button_rect = button["rect"].copy()
+            rotation = button["rotation"]
+
+            if rotation in (90, 270):
+                button_rect.width, button_rect.height = button_rect.height, button_rect.width
+
+            if rotation == 90:
+                button_rect.x -= button["rect"].height
+
+            elif rotation == 180:
+                button_rect.x -= button["rect"].width
+                button_rect.y -= button["rect"].height
+
+            elif rotation == 270:
+                button_rect.y -= button["rect"].width
+
+            if self.rect.colliderect(button_rect):
 
                 if button["name"] == "green_button":
                     Tiles.open_gates.add("Green")
@@ -501,7 +546,7 @@ class Player(pygame.sprite.Sprite):
 
                 elif button["name"] == "white_button":
                     Tiles.open_gates.add("White")
-                    button["pressed"] = True         
+                    button["pressed"] = True
 
     def change_gun(self):
 
@@ -512,10 +557,11 @@ class Player(pygame.sprite.Sprite):
         self.image = self.original_image
 
     def load_room(self):
-        if random.random() < 0.02:
+        if random.random() < 0.03:
             man_ogg.stop()
             Settings.player_level = 0
             man_ogg.play(-1)
+            restart_all()
             Settings.gun = 0
             self.change_gun()
         else:
@@ -606,7 +652,7 @@ class Player(pygame.sprite.Sprite):
 
             if self.rect.colliderect(ability["rect"]):
                 ability["collected"] = True
-                self.gravity_flip = -1
+                self.gravity_flip *= -1
 
     def gravity_swap_load(self):
         for ability in Tiles.abilities:
@@ -712,18 +758,38 @@ class Player(pygame.sprite.Sprite):
 
             screen.blit(ghost_bullet,ability["rect"]) 
 
+    def mini_star(self):
+        
+        for obj in Tiles.mini_stars:
+
+            if obj["collected"]:
+                continue
+
+            if self.rect.colliderect(obj["rect"]):
+                obj["collected"] = True
+                self.goal_progress += 1
+
+    def mini_star_load(self):
+        for star in Tiles.mini_stars:
+
+            if star["collected"]:
+                continue
+
+            screen.blit(mini_star,star["rect"]) 
+
+
 
     def update(self):
 
         self.celling_hit = False
         self.grounded = False
         if self.gravity_enabled == True:
-            self.velocity.y += Settings.GRAVITY * Settings.time_multiplyer * self.gravity_flip
+            self.velocity.y += Settings.GRAVITY * Settings.time_multiplyer * self.gravity_flip * 0.75
 
         steps = max(1, int(abs(self.velocity.x)))
 
         for _ in range(steps):
-            self.pos.x += (self.velocity.x * Settings.time_multiplyer) / steps
+            self.pos.x += (self.velocity.x * Settings.time_multiplyer * 0.75) / steps
             self.rect.centerx = self.pos.x
             self.get_global_polygon()
             self.resolve_collisions()
@@ -734,7 +800,7 @@ class Player(pygame.sprite.Sprite):
         steps = max(1, int(abs(self.velocity.y)))
 
         for _ in range(steps):
-            self.pos.y += (self.velocity.y * Settings.time_multiplyer) / steps
+            self.pos.y += (self.velocity.y * Settings.time_multiplyer * 0.75) / steps
             self.rect.centery = self.pos.y
             self.get_global_polygon()
             self.resolve_collisions()
@@ -763,6 +829,8 @@ class Player(pygame.sprite.Sprite):
         self.gravity_swap()
         self.tp_bullet_ability()
         self.ghost_bullet()
+        self.mini_star()
+
         
 
 
@@ -784,6 +852,7 @@ class Bullet(pygame.sprite.Sprite):
         self.velocity = direction * 19 #was15
 
         self.player = player
+        self.tp_enabled = player.tp_enabled
 
 
         self.ghost = player.ghost_enabled
@@ -806,12 +875,26 @@ class Bullet(pygame.sprite.Sprite):
 
         for button in Tiles.buttons:
 
-           
             if button["pressed"]:
                 continue
 
-            
-            if self.rect.colliderect(button["rect"]):
+            button_rect = button["rect"].copy()
+            rotation = button["rotation"]
+
+            if rotation in (90, 270):
+                button_rect.width, button_rect.height = button_rect.height, button_rect.width
+
+            if rotation == 90:
+                button_rect.x -= button["rect"].height
+
+            elif rotation == 180:
+                button_rect.x -= button["rect"].width
+                button_rect.y -= button["rect"].height
+
+            elif rotation == 270:
+                button_rect.y -= button["rect"].width
+
+            if self.rect.colliderect(button_rect):
 
                 if button["name"] == "purple_button":
                     Tiles.open_gates.add("Purple")
@@ -832,13 +915,40 @@ class Bullet(pygame.sprite.Sprite):
                         Tiles.broken_tiles.add("Breakable")
 
     def tp_player_to_bullets(self):
-        if self.player.tp_enabled:
+        if self.tp_enabled:
+
+            # Check whether the bullet is touching a wall
             for tile in Tiles.tiles:
                 if self.rect.colliderect(tile["rect"]):
-                    self.player.rect.center = self.rect.center
-                    self.player.pos = pygame.Vector2(self.player.rect.center)
-            
+
+                    # Start at the bullet's position
+                    target = pygame.Vector2(self.rect.center)
+
+                    # Direction the bullet is travelling
+                    direction = self.velocity.normalize()
+
+                    # Move backwards until the player is outside the wall
+                    while True:
+
+                        self.player.rect.center = target
+                        self.player.pos = pygame.Vector2(self.player.rect.center)
+
+                        # Check if player is still inside a tile
+                        touching_wall = False
+
+                        for player_tile in Tiles.tiles:
+                            if self.player.rect.colliderect(player_tile["rect"]):
+                                touching_wall = True
+                                break
+
+                        if not touching_wall:
+                            break
+
+                        # Move backwards along the bullet's path
+                        target -= direction * 2
+
                     self.player.tp_enabled = False
+                    return
 
 
 
@@ -850,8 +960,8 @@ class Bullet(pygame.sprite.Sprite):
         old_center = self.rect.center
         self.rect = self.image.get_rect(center=old_center)
 
-        self.rect.x += self.velocity.x * Settings.time_multiplyer
-        self.rect.y += self.velocity.y * Settings.time_multiplyer
+        self.rect.x += self.velocity.x * Settings.time_multiplyer * 0.75
+        self.rect.y += self.velocity.y * Settings.time_multiplyer * 0.75
 
         if not self.ghost:
             for tile in Tiles.tiles:
@@ -884,7 +994,6 @@ def restart_all():
     global m_stars, m_stars_required
     global kill_is_req, kills_req
     global star, star_rect, star_polygon
-    global mini_stars_list
     global m_star_collected
     global bonus_time
 
@@ -914,7 +1023,7 @@ def restart_all():
     Settings.slow_time_active = False
     
     m_star_collected = False
-    mini_stars_list = create_mini_stars()
+
     star, star_rect, star_polygon = create_star(goal_x, goal_y)
 
     Settings.time = 0
@@ -926,6 +1035,8 @@ def restart_all():
     Tiles.portals.clear()
     Tiles.buttons.clear()
     Tiles.open_gates.clear()
+    Tiles.mini_stars.clear()
+    Tiles.broken_tiles.clear()
 
     for obj in Tiles.bad_guys:
         obj["killed"] = False
@@ -1204,7 +1315,6 @@ while True:
             bullet_group.draw(screen)
             player_group.draw(screen)
             timer.display_timer(screen)
-            player_group.sprite.mini_star_load()
             player_group.sprite.level_complete()
             player_group.sprite.load_buttons()
             player_group.sprite.clock_image_load()
@@ -1214,6 +1324,7 @@ while True:
             player_group.sprite.gravity_swap_load()
             player_group.sprite.load_tp_bullet()
             player_group.sprite.ghost_bullet_load()
+            player_group.sprite.mini_star_load()
             
 
             for obj in Tiles.bad_guys:
@@ -1253,7 +1364,7 @@ while True:
                                 restart_all()
 
                         if Settings.slow_time_active:
-                            if pygame.time.get_ticks() - Settings.slow_time_start >= 3000:
+                            if pygame.time.get_ticks() - Settings.slow_time_start >= 4500:
                                 Settings.time_multiplyer = 1.0
                                 Settings.slow_time_active = False
                         
@@ -1333,7 +1444,25 @@ while True:
 
     
     
-    
+    grid_surface = pygame.Surface((1200, 800), pygame.SRCALPHA)
+
+    for x in range(0, 1201, 50):
+        pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
+
+    for y in range(0, 801, 50):
+        pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
+
+    grid_font = pygame.font.Font(None, 18)
+
+    for x in range(0, 1201, 50):
+        pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
+        grid_surface.blit(grid_font.render(str(x), True, (255, 0, 0)), (x + 2, 2))
+
+    for y in range(0, 801, 50):
+        pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
+        grid_surface.blit(grid_font.render(str(y), True, (255, 0, 0)), (2, y + 2))
+
+    screen.blit(grid_surface, (0, 0))
     pygame.display.update()
     game_clock.tick(60)
     

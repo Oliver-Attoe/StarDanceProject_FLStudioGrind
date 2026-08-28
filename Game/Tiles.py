@@ -12,9 +12,10 @@ portals = []
 abilities = []
 bad_guys = []
 buttons = []
+mini_stars = []
 
 def load_collision():
-
+###section encolsed in #### was written by AI ###
     tiles.clear()
 
     for layer in tmx_data.visible_layers:
@@ -25,7 +26,7 @@ def load_collision():
 
                 tile = tmx_data.get_tile_image_by_gid(gid)
                 properties = tmx_data.get_tile_properties_by_gid(gid)
-
+#####################################################################
                 if tile:
 
                     rect = pygame.Rect(
@@ -144,18 +145,34 @@ def load_objects():
                     obj.width,
                     obj.height
                 ),
-                "killed": False})  
+                "killed": False})
 
-        if obj.properties.get("obj_type") == "button":
+        if obj.properties.get("obj_type") == "mini_star":
             
-            buttons.append({"rect": pygame.Rect(
+            mini_stars.append({"rect": pygame.Rect(
                     obj.x,
                     obj.y,
                     obj.width,
                     obj.height
                 ),
+                "collected": False,})    
+
+        if obj.properties.get("obj_type") == "button":
+
+            button_rect = pygame.Rect(
+                obj.x,
+                obj.y,
+                obj.width,
+                obj.height
+            )
+
+            buttons.append({
+                "rect": button_rect,
                 "pressed": False,
-                "name": obj.name})  
+                "name": obj.name,
+                "rotation": int(obj.rotation) % 360
+            })
+
 
 
         
@@ -187,7 +204,7 @@ def draw_map(screen):
                 if tile_type in open_gates:
 
                     image = tile.copy()
-                    image.set_alpha(50)
+                    image.set_alpha(80)
 
                     screen.blit(
                         image,
@@ -197,7 +214,7 @@ def draw_map(screen):
                         )
                     )
 
-                if tile_type in broken_tiles:
+                elif tile_type in broken_tiles:
 
                     image = tile.copy()
                     image.set_alpha(0)
@@ -209,7 +226,6 @@ def draw_map(screen):
                             y * tmx_data.tileheight
                         )
                     )
-
 
                 else:
 
@@ -237,3 +253,4 @@ def load_level(map_file):
     load_objects()
 
     
+

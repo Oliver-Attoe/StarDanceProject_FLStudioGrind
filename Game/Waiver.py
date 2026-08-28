@@ -13,7 +13,7 @@ text = ""
 new_waiver_text = pygame.font.Font("Images/Times_new.ttf", 30)
 
 
-
+###section encolsed in #### was written by AI ###
 def draw_signature(signing):
     global last_position
     global signature_surface
@@ -42,6 +42,8 @@ def draw_signature(signing):
 
 
     last_position = local_position
+
+##########################################
 
 class Check_boxes(pygame.sprite.Sprite):
     def __init__(self, x, y):

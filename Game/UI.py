@@ -139,20 +139,22 @@ gun_group = pygame.sprite.Group()
 def button_generation(levels):            
         
 
-        x = 360
-        y = 330
+        x = 100
+        y = 100
 
         for level in range(1, levels + 1):
             level_button = Level_select(level, x, y)
             level_group.add(level_button)
-            x += 120
-            if x >= 960:
-                x = 360
-                y += 120
+            x += 110
+            if x >= 1100:
+                x =100
+                y += 150
 
             
 
         return level_group
+
+
 
 def lock_level_image(max_player_level):
     for level_button in level_group:
@@ -184,49 +186,7 @@ def create_star(goal_x, goal_y):
 
     return star, star_rect,star_polygon
 
-def create_mini_stars():
 
-    mini_star_rect = mini_star.get_rect(center=(150, 200))
-
-    mini_star_rect2 = mini_star.get_rect(center=(150, 470))
-    
-     
-    local_m_star_polygon = [
-            pygame.Vector2(0, -45),  # 1
-             pygame.Vector2(0, 45),   # 2
-             pygame.Vector2(45, 0),    # 4
-             pygame.Vector2(-45, 0),    # 5
-         ]
-     
-    mini_star_polygon = []
-    centre = pygame.Vector2(mini_star_rect.center)
-     
-    for point in local_m_star_polygon:
-        mini_star_polygon.append(centre + point)
-
-    mini_star_polygon2 = []
-    centre2 = pygame.Vector2(mini_star_rect2.center)
-     
-    for point in local_m_star_polygon:
-        mini_star_polygon2.append(centre2 + point)
-
-
-    mini_stars_list = [
-        {
-        "rect": mini_star_rect,
-        "polygon": mini_star_polygon,
-        "collected": False
-        },
-        {
-        "rect": mini_star_rect2,
-        "polygon": mini_star_polygon2,
-        "collected": False
-        }
-    ]
-        
-     
-     
-    return mini_stars_list
 
 
 
