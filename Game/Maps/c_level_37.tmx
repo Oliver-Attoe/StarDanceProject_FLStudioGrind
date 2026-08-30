@@ -75,7 +75,7 @@
     <property name="portal_type" value="portal"/>
    </properties>
   </object>
-  <object id="5" name="Orange_portal_floor" x="92.8391" y="321.362" width="128" height="16">
+  <object id="5" name="Orange_portal_floor" x="226.756" y="334.633" width="128" height="16" rotation="180">
    <properties>
     <property name="portal_id" type="int" value="2"/>
     <property name="portal_rotation" type="int" value="180"/>

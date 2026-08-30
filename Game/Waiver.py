@@ -10,7 +10,7 @@ text_field_filled = False
 text_active = True
 text_visible = True
 text = ""
-new_waiver_text = pygame.font.Font("Images/Times_new.ttf", 30)
+new_waiver_text = pygame.font.Font("Game/Images/Times_new.ttf", 30)
 
 
 ###section encolsed in #### was written by AI ###
@@ -49,7 +49,7 @@ class Check_boxes(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
-        self.image = pygame.image.load("Images/unchecked_box.png")
+        self.image = pygame.image.load("Game/Images/unchecked_box.png")
         self.rect = self.image.get_rect(center = (x,y))
         self.checked = False
 

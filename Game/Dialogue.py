@@ -11,14 +11,14 @@ class Dialogue(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.image = pygame.image.load("Images/Dialogue_box.png")
+        self.image = pygame.image.load("Game/Images/Dialogue_box.png")
         self.rect = self.image.get_rect(center=(600, 675))
 
         self.text = ""
         self.word_list = []
 
         self.font = pygame.font.Font(
-            "Images/undertale_font.ttf",
+            "Game/Images/undertale_font.ttf",
             50
         )
 

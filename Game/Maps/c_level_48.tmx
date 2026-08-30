@@ -61,7 +61,7 @@
     <property name="obj_type" value="mini_star"/>
    </properties>
   </object>
-  <object id="2" name="mini_star" x="910.666" y="548.509" width="90" height="90">
+  <object id="2" name="mini_star" x="901.881" y="119.972" width="90" height="90">
    <properties>
     <property name="obj_type" value="mini_star"/>
    </properties>

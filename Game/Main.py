@@ -10,6 +10,7 @@ import random
 import Waiver
 import Dialogue
 import webbrowser
+import BetaStats
 #Imports ONLY
 ###############################################################################################################
 
@@ -40,7 +41,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         gun_image = Settings.set_gun_image()
 
-        self.original_image = pygame.image.load(f"Images/{gun_image}").convert_alpha()
+        self.original_image = pygame.image.load(f"Game/Images/{gun_image}").convert_alpha()
 
         self.image = self.original_image
         self.rect = self.image.get_rect(center=(start_x, start_y))
@@ -152,7 +153,7 @@ class Player(pygame.sprite.Sprite):
         for point in self.local_polygon:
             rotated = point.rotate(-self.angle)
             self.global_polygon.append(rotated + self.pos)
-
+###section encolsed in #### was written by AI ###
     def get_axes(self, global_polygon):
 
         axes = []
@@ -209,7 +210,7 @@ class Player(pygame.sprite.Sprite):
             smallest_axis = -smallest_axis
 
         return True, (smallest_axis, smallest_overlap)
-
+##############################################
     def rect_to_poly(self, rect):
 
         return [
@@ -267,7 +268,7 @@ class Player(pygame.sprite.Sprite):
 
 
 
-            
+###section encolsed in #### was written by AI ###
 
             axis, overlap = response
 
@@ -292,7 +293,7 @@ class Player(pygame.sprite.Sprite):
 
             if vn < 0:
                 self.velocity -= axis * vn
-
+###################################################################
             #Ground / ceiling
             if axis.y < -0.7:
                 self.grounded = True
@@ -376,7 +377,7 @@ class Player(pygame.sprite.Sprite):
             if self.portal_cooldown <= 0:
                 if self.rect.colliderect(portal["rect"]):
                 
-
+###section encolsed in #### was written by AI ###
                     destination = next(
                         p for p in Tiles.portals
                         if p["portal_id"] == portal["portal_target"]
@@ -391,7 +392,7 @@ class Player(pygame.sprite.Sprite):
                         rotation_difference = -(entry_angle - exit_angle)
 
                     self.velocity.rotate_ip(rotation_difference)
-
+###############################################################################
                     self.pos = pygame.Vector2(destination["rect"].center)
                     self.rect.center = self.pos
                     self.get_global_polygon()
@@ -470,6 +471,26 @@ class Player(pygame.sprite.Sprite):
                 obj["killed"] = True
                 Settings.kill_count += 1
 
+    def get_button_rect(self, button):
+###section encolsed in #### was written by AI ###
+        rect = button["rect"].copy()
+        rotation = button["rotation"]
+
+        if rotation in (90, 270):
+            rect.width, rect.height = rect.height, rect.width
+
+        if rotation == 90:
+            rect.x -= button["rect"].height
+
+        elif rotation == 180:
+            rect.x -= button["rect"].width
+            rect.y -= button["rect"].height
+
+        elif rotation == 270:
+            rect.y -= button["rect"].width
+
+        return rect
+#####################################################################
 
 
     def load_buttons(self):
@@ -498,21 +519,9 @@ class Player(pygame.sprite.Sprite):
                 -rotation
             )
 
-            x = button["rect"].x
-            y = button["rect"].y
+            button_rect = self.get_button_rect(button)
 
-            if rotation == 90:
-                x -= rotated_image.get_width()
-
-            elif rotation == 180:
-                x -= rotated_image.get_width()
-                y -= rotated_image.get_height()
-
-            elif rotation == 270:
-                y -= rotated_image.get_height()
-
-            screen.blit(rotated_image, (x, y))
-
+            screen.blit(rotated_image, button_rect.topleft)
 
 
     def button_detection_gun(self):
@@ -522,21 +531,7 @@ class Player(pygame.sprite.Sprite):
             if button["pressed"]:
                 continue
 
-            button_rect = button["rect"].copy()
-            rotation = button["rotation"]
-
-            if rotation in (90, 270):
-                button_rect.width, button_rect.height = button_rect.height, button_rect.width
-
-            if rotation == 90:
-                button_rect.x -= button["rect"].height
-
-            elif rotation == 180:
-                button_rect.x -= button["rect"].width
-                button_rect.y -= button["rect"].height
-
-            elif rotation == 270:
-                button_rect.y -= button["rect"].width
+            button_rect = self.get_button_rect(button)
 
             if self.rect.colliderect(button_rect):
 
@@ -552,7 +547,7 @@ class Player(pygame.sprite.Sprite):
 
         gun_image = Settings.set_gun_image()
 
-        self.original_image = pygame.image.load(f"Images/{gun_image}").convert_alpha()
+        self.original_image = pygame.image.load(f"Game/Images/{gun_image}").convert_alpha()
 
         self.image = self.original_image
 
@@ -785,7 +780,7 @@ class Player(pygame.sprite.Sprite):
         self.grounded = False
         if self.gravity_enabled == True:
             self.velocity.y += Settings.GRAVITY * Settings.time_multiplyer * self.gravity_flip * 0.75
-
+###section encolsed in #### was written by AI ###
         steps = max(1, int(abs(self.velocity.x)))
 
         for _ in range(steps):
@@ -804,7 +799,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.centery = self.pos.y
             self.get_global_polygon()
             self.resolve_collisions()
-
+#######################################################################
 
         
         self.in_air_rotate()
@@ -838,7 +833,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, barrel_offset,angle,player):
         super().__init__()
 
-        self.original_image = pygame.image.load("Images/BULLET.png").convert_alpha()
+        self.original_image = pygame.image.load("Game/Images/BULLET.png").convert_alpha()
         self.image = self.original_image
         self.rect = self.image.get_rect(center=barrel_offset)
         self.angle = angle
@@ -878,21 +873,7 @@ class Bullet(pygame.sprite.Sprite):
             if button["pressed"]:
                 continue
 
-            button_rect = button["rect"].copy()
-            rotation = button["rotation"]
-
-            if rotation in (90, 270):
-                button_rect.width, button_rect.height = button_rect.height, button_rect.width
-
-            if rotation == 90:
-                button_rect.x -= button["rect"].height
-
-            elif rotation == 180:
-                button_rect.x -= button["rect"].width
-                button_rect.y -= button["rect"].height
-
-            elif rotation == 270:
-                button_rect.y -= button["rect"].width
+            button_rect = self.player.get_button_rect(button)
 
             if self.rect.colliderect(button_rect):
 
@@ -917,23 +898,23 @@ class Bullet(pygame.sprite.Sprite):
     def tp_player_to_bullets(self):
         if self.tp_enabled:
 
-            # Check whether the bullet is touching a wall
+            
             for tile in Tiles.tiles:
                 if self.rect.colliderect(tile["rect"]):
 
-                    # Start at the bullet's position
+                   
                     target = pygame.Vector2(self.rect.center)
 
-                    # Direction the bullet is travelling
+                    
                     direction = self.velocity.normalize()
 
-                    # Move backwards until the player is outside the wall
+                   
                     while True:
 
                         self.player.rect.center = target
                         self.player.pos = pygame.Vector2(self.player.rect.center)
 
-                        # Check if player is still inside a tile
+                        
                         touching_wall = False
 
                         for player_tile in Tiles.tiles:
@@ -944,7 +925,7 @@ class Bullet(pygame.sprite.Sprite):
                         if not touching_wall:
                             break
 
-                        # Move backwards along the bullet's path
+                        
                         target -= direction * 2
 
                     self.player.tp_enabled = False
@@ -966,6 +947,18 @@ class Bullet(pygame.sprite.Sprite):
         if not self.ghost:
             for tile in Tiles.tiles:
                 if self.rect.colliderect(tile["rect"]):
+
+                    tile_property = tile["property"].get("type")
+
+
+                    if tile_property in Tiles.open_gates:
+                        continue
+
+                   
+                    if tile_property in Tiles.broken_tiles:
+                        continue
+
+                    
                     self.kill()
                     break
 
@@ -997,7 +990,9 @@ def restart_all():
     global m_star_collected
     global bonus_time
 
-    player_group.sprite.reset_player()
+    
+    BetaStats.level_restarts[Settings.player_level - 1] += 1
+    
 
     for bullet in bullet_group:
         bullet.kill()
@@ -1057,6 +1052,8 @@ def restart_all():
     dialogue.last_word_time = pygame.time.get_ticks()
     dialogue.text = ""
     dialogue.word_list = []
+
+    player_group.sprite.reset_player()
 
 
 player_group = pygame.sprite.GroupSingle()
@@ -1209,6 +1206,7 @@ while True:
                         Settings.game_state = "playing"
 
                         restart_all()
+
                         
                     continue
 
@@ -1235,7 +1233,12 @@ while True:
                             webbrowser.open("https://youtu.be/dQw4w9WgXcQ?si=tpj35XmZbQUUiyly")
 
 
+        if event.type == pygame.KEYDOWN:
+            BetaStats.set_difficulty(event.key)
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SLASH:
+                BetaStats.save_stats()
 
         if event.type == pygame.KEYDOWN and Waiver.text_active:
             if event.key == pygame.K_BACKSPACE:
@@ -1251,6 +1254,8 @@ while True:
                 Waiver.text_field_filled = True
             else:
                 Waiver.text_field_filled = False
+
+
                        
 
 
@@ -1277,7 +1282,7 @@ while True:
 
             
             if start_music == True:
-                #play_music()
+                play_music()
                 start_music = False
 
         
@@ -1377,7 +1382,11 @@ while True:
         case "has_won":
             Settings.level_lock()
 
-
+            BetaStats.level_time[Settings.player_level - 1] = timer.time_passed / 1000
+            BetaStats.level_bullet_count[Settings.player_level - 1] = [
+                Settings.bullet_count,
+                bullet_max
+            ]
 
             
 
@@ -1444,25 +1453,40 @@ while True:
 
     
     
-    grid_surface = pygame.Surface((1200, 800), pygame.SRCALPHA)
+    # grid_surface = pygame.Surface((1200, 800), pygame.SRCALPHA)
 
-    for x in range(0, 1201, 50):
-        pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
+    # for x in range(0, 1201, 50):
+    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
 
-    for y in range(0, 801, 50):
-        pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
+    # for y in range(0, 801, 50):
+    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
 
-    grid_font = pygame.font.Font(None, 18)
+    # grid_font = pygame.font.Font(None, 18)
 
-    for x in range(0, 1201, 50):
-        pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
-        grid_surface.blit(grid_font.render(str(x), True, (255, 0, 0)), (x + 2, 2))
+    # for x in range(0, 1201, 50):
+    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
+    #     grid_surface.blit(grid_font.render(str(x), True, (255, 0, 0)), (x + 2, 2))
 
-    for y in range(0, 801, 50):
-        pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
-        grid_surface.blit(grid_font.render(str(y), True, (255, 0, 0)), (2, y + 2))
+    # for y in range(0, 801, 50):
+    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
+    #     grid_surface.blit(grid_font.render(str(y), True, (255, 0, 0)), (2, y + 2))
 
-    screen.blit(grid_surface, (0, 0))
+    #screen.blit(grid_surface, (0, 0))
+
+
+    bullet_text = bullet_font.render(
+        f"Bullets: {Settings.bullet_count}/{bullet_max}",
+        True,
+        "pink"
+    )
+
+    screen.blit(bullet_text, (20, 20))
+
+    print(BetaStats.level_bullet_count)
+    #print(BetaStats.level_restarts)
+    #print(BetaStats.level_time)
+    #print(BetaStats.level_difficulty)
+    
     pygame.display.update()
     game_clock.tick(60)
     
