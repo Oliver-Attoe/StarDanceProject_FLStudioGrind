@@ -1088,13 +1088,14 @@ while True:
                         reset_dialogue()
                         Settings.game_state = "playing"
                         Settings.playing_state = "start"
+                        continue
                         
 
 
                     if Settings.paused == True:
                         Settings.paused = False
                         player_group.sprite.pos = pygame.Vector2(start_x, start_y)
-                        Settings.playing_state = "start"
+                        
                         player_group.sprite.velocity = pygame.Vector2(0, 0)
 
                     if level_button_rect2.collidepoint(event.pos):
@@ -1143,6 +1144,8 @@ while True:
                             Settings.playing_state = "start"
                             Settings.paused = False
                             player_group.sprite.load_room()
+
+                    continue
 
                 case "gun_select":
 
