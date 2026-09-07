@@ -31,6 +31,7 @@ timer = Timer.Stopwatch()
 
 m_star_collected = False
 
+
 Tiles.load_level(map_file)
 
 ###Class's ONLY###
@@ -978,7 +979,12 @@ class Bullet(pygame.sprite.Sprite):
         self.tp_player_to_bullets()
         
 ###############################################################################################################
-
+def reset_dialogue():
+    
+    dialogue.word_index = 0
+    dialogue.last_word_time = pygame.time.get_ticks()
+    dialogue.text = ""
+    dialogue.word_list = []
 
 def restart_all():
     global map_file, start_x, start_y
@@ -1048,10 +1054,8 @@ def restart_all():
     Tiles.load_level(map_file)
 
     
-    dialogue.word_index = 0
-    dialogue.last_word_time = pygame.time.get_ticks()
-    dialogue.text = ""
-    dialogue.word_list = []
+    reset_dialogue()
+
 
     player_group.sprite.reset_player()
 
@@ -1081,9 +1085,11 @@ while True:
 
                     if start_button_rect.collidepoint(event.pos):
                         button_fx.play()
-
+                        reset_dialogue()
                         Settings.game_state = "playing"
                         Settings.playing_state = "start"
+                        
+
 
                     if Settings.paused == True:
                         Settings.paused = False
@@ -1213,9 +1219,10 @@ while True:
             if Settings.game_state == "playing":
 
 
-                if Settings.paused == False:
+                if not Settings.paused and not dialogue.active:
 
                     barrel = player_group.sprite.barrel_position()
+                    
 
                     if Settings.bullet_count < bullet_max:
 
