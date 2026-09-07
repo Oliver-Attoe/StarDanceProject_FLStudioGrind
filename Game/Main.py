@@ -1066,34 +1066,30 @@ bullet_group = pygame.sprite.Group()
 #Game loop ONLY
 
 while True:
-    #event loop ONLY
+    #Event loop ONLY
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-    
+
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
 
-
             match Settings.game_state:
-                case "start_menu":
 
-                    
+                case "start_menu":
 
                     if start_button_rect.collidepoint(event.pos):
                         button_fx.play()
-                
+
                         Settings.game_state = "playing"
                         Settings.playing_state = "start"
-                        
-                
 
                     if Settings.paused == True:
                         Settings.paused = False
                         player_group.sprite.pos = pygame.Vector2(start_x, start_y)
                         Settings.playing_state = "start"
                         player_group.sprite.velocity = pygame.Vector2(0, 0)
-
 
                     if level_button_rect2.collidepoint(event.pos):
                         Settings.game_state = "selecting_level"
@@ -1103,9 +1099,8 @@ while True:
 
                     if gun_select_rect.collidepoint(event.pos):
                         Settings.game_state = "gun_select"
-            
-                case"playing":
 
+                case "playing":
 
                     if dialogue.active:
                         if dialogue.word_index >= len(dialogue.word_list):
@@ -1117,29 +1112,10 @@ while True:
                         Settings.paused = True
                         timer.pause()
 
-
-                    if Settings.paused == False:
-                        
-                        barrel = player_group.sprite.barrel_position()
-                        if Settings.bullet_count < bullet_max:
-                            bullet = Bullet(barrel, player_group.sprite.angle, player_group.sprite)
-                            bullet_group.add(bullet)
-                            Settings.bullet_count += 1
-                            gun_fired_fx.play()
-
-                            player_group.sprite.recoil(bullet.velocity)
-                            player_group.sprite.gravity_enabled = True
-                            if Settings.playing_state == "start":
-                                timer.start()
-                                Settings.playing_state = "in_proggress"
-
-                            if player_group.sprite.frozen:
-                                player_group.sprite.frozen = False
-
                     if Settings.paused and home_rect.collidepoint(event.pos):
                         Settings.game_state = "start_menu"
                         start_music = True
-                               
+
                     if cont_rect.collidepoint(event.pos):
                         Settings.paused = False
                         timer.resume()
@@ -1147,40 +1123,34 @@ while True:
                     if level_button_rect.collidepoint(event.pos):
                         Settings.game_state = "selecting_level"
 
-
-
-                 
-                        
-
-
                 case "selecting_level":
+
                     for button in level_selection:
 
                         if button.rect.collidepoint(event.pos):
-                            #if button.level <= Settings.max_player_level:
-                                current_level = button.level
-                                Settings.player_level = current_level
-                        
-                                restart_all()
+                            current_level = button.level
+                            Settings.player_level = current_level
 
-                                Settings.game_state = "playing"
-                                Settings.playing_state = "start"
-                                Settings.paused = False
-                                player_group.sprite.load_room()
+                            restart_all()
+
+                            Settings.game_state = "playing"
+                            Settings.playing_state = "start"
+                            Settings.paused = False
+                            player_group.sprite.load_room()
 
                 case "gun_select":
+
                     for button in gun_selection:
 
                         if button.rect.collidepoint(event.pos):
+
                             if Settings.total_stars >= button.gun * 6:
                                 Settings.gun = button.gun + 1
                                 player_group.sprite.change_gun()
                                 Settings.game_state = "start_menu"
 
-
-
-
                 case "lost":
+
                     if restart_button_rect.collidepoint(event.pos):
                         Settings.playing_state = "start"
                         Settings.game_state = "playing"
@@ -1192,55 +1162,100 @@ while True:
                 case "has_won":
 
                     if dialogue.active:
+
                         if dialogue.word_index >= len(dialogue.word_list):
                             dialogue.active = False
+
                         continue
-
-
 
                     if next_level_rect.collidepoint(event.pos):
                         Settings.player_level += 1
 
-                        
                         Settings.playing_state = "start"
                         Settings.game_state = "playing"
 
                         restart_all()
 
-                        
                     continue
 
                 case "getting_hint":
+
                     for box in check_boxes:
+
                         if box.rect.collidepoint(event.pos):
                             laugh.play()
                             box.checked = True
 
                     if go_back_rect.collidepoint(event.pos):
-                        Settings.game_state ="start_menu"
+                        Settings.game_state = "start_menu"
 
                     if waiver_text_box.collidepoint(event.pos):
                         Waiver.text_active = True
                         Waiver.text_visible = True
-                        
                     else:
                         Waiver.text_active = False
 
                     feild_count = Waiver.all_fields_filled()
 
                     if feild_count >= 5:
+
                         if get_hint_rect.collidepoint(event.pos):
-                            webbrowser.open("https://youtu.be/dQw4w9WgXcQ?si=tpj35XmZbQUUiyly")
+                            webbrowser.open(
+                                "https://youtu.be/dQw4w9WgXcQ?si=tpj35XmZbQUUiyly"
+                            )
+
+        if (
+            (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1)
+            or
+            (event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN)
+        ):
+
+            if Settings.game_state == "playing":
+
+
+                if Settings.paused == False:
+
+                    barrel = player_group.sprite.barrel_position()
+
+                    if Settings.bullet_count < bullet_max:
+
+                        bullet = Bullet(
+                            barrel,
+                            player_group.sprite.angle,
+                            player_group.sprite
+                        )
+
+                        bullet_group.add(bullet)
+                        Settings.bullet_count += 1
+                        gun_fired_fx.play()
+
+                        player_group.sprite.recoil(bullet.velocity)
+                        player_group.sprite.gravity_enabled = True
+
+                        if Settings.playing_state == "start":
+                            timer.start()
+                            
+                            Settings.playing_state = "in_proggress"
+                            
+
+                        if player_group.sprite.frozen:
+                            player_group.sprite.frozen = False
+
+
+                        
+
 
 
         if event.type == pygame.KEYDOWN:
             BetaStats.set_difficulty(event.key)
 
         if event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_SLASH:
                 BetaStats.save_stats()
 
         if event.type == pygame.KEYDOWN and Waiver.text_active:
+
             if event.key == pygame.K_BACKSPACE:
                 Waiver.text = Waiver.text[:-1]
 
@@ -1482,7 +1497,7 @@ while True:
 
     screen.blit(bullet_text, (20, 20))
 
-    print(BetaStats.level_bullet_count)
+    #print(BetaStats.level_bullet_count)
     #print(BetaStats.level_restarts)
     #print(BetaStats.level_time)
     #print(BetaStats.level_difficulty)
