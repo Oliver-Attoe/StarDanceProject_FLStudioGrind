@@ -133,7 +133,7 @@ get_hint_rect = get_hint_surface.get_rect(bottomright=(1180, 780))
 bullet_font = pygame.font.Font(None, 55)
 
 flash_surface = pygame.image.load("Game/Images/Flash.png").convert_alpha()
-flash_rect = flash_surface.get_rect(center = (1400, 1000))
+
 
 
 

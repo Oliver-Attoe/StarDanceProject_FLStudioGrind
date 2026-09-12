@@ -53,7 +53,7 @@ class Player(pygame.sprite.Sprite):
 
         self.angle = 0
 
-        self.barrel_offset = pygame.Vector2(35,10)
+        self.barrel_offset = pygame.Vector2(27,14)
         
         self.velocity = pygame.Vector2(0, 0)
 
@@ -89,6 +89,8 @@ class Player(pygame.sprite.Sprite):
 
         self.ghost_enabled = False
 
+        self.flash_timer = 0
+
 
     def follow_mouse(self):
         if Dialogue.dialogue_active[Settings.player_level - 1][0] == False:
@@ -121,7 +123,7 @@ class Player(pygame.sprite.Sprite):
                 hyp_y = barrel[1] + direction_y * c
 
                 pygame.draw.circle(screen, "white", (int(hyp_x), int(hyp_y)), 3)
-                #pygame.draw.circle(screen, "red", barrel, 5)
+                
            
     def barrel_position(self):
         rotated_offset = self.barrel_offset.rotate(-(self.angle))
@@ -129,6 +131,14 @@ class Player(pygame.sprite.Sprite):
     
     def recoil(self,velocity):
         self.velocity -= velocity * 1.5
+
+
+    def load_flash(self):
+        if self.flash_timer > 0:
+            flash_rect = flash_surface.get_rect(center=self.barrel_position())
+            screen.blit(flash_surface, flash_rect)
+            self.flash_timer -= 1
+
 
     def in_air_rotate(self):
         self.angle += self.rot_speed * Settings.time_multiplyer * 0.75
@@ -419,6 +429,7 @@ class Player(pygame.sprite.Sprite):
                 continue
             
             if math.dist(self.rect.center, clock["rect"].center) < 40:
+                time_stop_fx.play()
                 clock["collected"] = True
                 self.frozen = True            
 
@@ -470,6 +481,7 @@ class Player(pygame.sprite.Sprite):
 
             if self.rect.colliderect(obj["rect"]):
                 obj["killed"] = True
+                death_fx.play()
                 Settings.kill_count += 1
 
     def get_button_rect(self, button):
@@ -539,10 +551,12 @@ class Player(pygame.sprite.Sprite):
                 if button["name"] == "green_button":
                     Tiles.open_gates.add("Green")
                     button["pressed"] = True
+                    button_fx.play()
 
                 elif button["name"] == "white_button":
                     Tiles.open_gates.add("White")
                     button["pressed"] = True
+                    button_fx.play()
 
     def change_gun(self):
 
@@ -599,7 +613,7 @@ class Player(pygame.sprite.Sprite):
 
             if self.rect.colliderect(ability["rect"]):
                 ability["collected"] = True
-
+                bullet_pick_up_fx.play()
                 Settings.bullet_count -= 1
 
     def bullet_pickup_load(self):
@@ -624,6 +638,7 @@ class Player(pygame.sprite.Sprite):
             if self.rect.colliderect(ability["rect"]):
                 ability["collected"] = True
                 Settings.time_multiplyer = 0.4
+                slow_time_fx.play()
                 Settings.slow_time_active = True
                 Settings.slow_time_start = pygame.time.get_ticks()
 
@@ -647,8 +662,14 @@ class Player(pygame.sprite.Sprite):
                 continue
 
             if self.rect.colliderect(ability["rect"]):
+                if self.gravity_flip > 0:
+                    up_gravity_fx.play()
+                else:
+                    down_gravity_fx.play()
                 ability["collected"] = True
                 self.gravity_flip *= -1
+
+                
 
     def gravity_swap_load(self):
         for ability in Tiles.abilities:
@@ -717,7 +738,7 @@ class Player(pygame.sprite.Sprite):
 
             if self.rect.colliderect(ability["rect"]):
                 ability["collected"] = True
-
+                bullet_pick_up_fx.play()
                 Settings.bullet_count -= 1
                 self.tp_enabled = True
 
@@ -741,6 +762,7 @@ class Player(pygame.sprite.Sprite):
                 continue
 
             if self.rect.colliderect(ability["rect"]):
+                bullet_pick_up_fx.play()
                 ability["collected"] = True
                 self.ghost_enabled = True
 
@@ -826,6 +848,8 @@ class Player(pygame.sprite.Sprite):
         self.tp_bullet_ability()
         self.ghost_bullet()
         self.mini_star()
+        self.load_flash()
+        #pygame.draw.circle(screen, "red", self.barrel_position(), 5)
 
         
 
@@ -865,6 +889,7 @@ class Bullet(pygame.sprite.Sprite):
 
             if self.rect.colliderect(obj["rect"]):
                 obj["killed"] = True
+                death_fx.play()
                 Settings.kill_count += 1
 
     def button_detection_bullets(self):
@@ -881,10 +906,12 @@ class Bullet(pygame.sprite.Sprite):
                 if button["name"] == "purple_button":
                     Tiles.open_gates.add("Purple")
                     button["pressed"] = True
+                    button_fx.play()
 
                 elif button["name"] == "white_button":
                     Tiles.open_gates.add("White")
                     button["pressed"] = True
+                    button_fx.play()
 
     def break_tiles(self):
        
@@ -894,6 +921,7 @@ class Bullet(pygame.sprite.Sprite):
             if self.rect.colliderect(tile["rect"]):
                 if tile["property"].get("type") == "Breakable":
                     if self.rect.colliderect(tile["rect"]):
+                        break_fx.play()
                         Tiles.broken_tiles.add("Breakable")
 
     def tp_player_to_bullets(self):
@@ -977,6 +1005,7 @@ class Bullet(pygame.sprite.Sprite):
         self.button_detection_bullets()
         self.break_tiles()
         self.tp_player_to_bullets()
+        
         
 ###############################################################################################################
 def reset_dialogue():
@@ -1222,7 +1251,7 @@ while True:
             if Settings.game_state == "playing":
 
 
-                if not Settings.paused and not dialogue.active:
+                if not Settings.paused:
 
                     barrel = player_group.sprite.barrel_position()
                     
@@ -1238,6 +1267,7 @@ while True:
                         bullet_group.add(bullet)
                         Settings.bullet_count += 1
                         gun_fired_fx.play()
+                        player_group.sprite.flash_timer = 7
 
                         player_group.sprite.recoil(bullet.velocity)
                         player_group.sprite.gravity_enabled = True

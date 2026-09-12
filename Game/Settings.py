@@ -230,7 +230,7 @@ def level_load():
             start_x = 600
             start_y = 250
             
-            bullet_max = 1
+            bullet_max = 2
             goal_x = 100
             goal_y = 700
             m_stars = False
@@ -731,12 +731,12 @@ def level_load():
 
         case 50:
             map_file = "Game/Maps/c_level_50.tmx"
-            start_x = 0
-            start_y = 0
+            start_x = 50
+            start_y = 750
             
             bullet_max = 12
-            goal_x = 0
-            goal_y = 0
+            goal_x = 1100
+            goal_y = 50
             m_stars = False
             m_stars_required = 0
             kill_is_req = False
