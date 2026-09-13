@@ -575,15 +575,16 @@ class Player(pygame.sprite.Sprite):
         self.image = self.original_image
 
     def load_room(self):
-        if random.random() < 0.03:
+        if random.random() < 0.9:
             man_ogg.stop()
             Settings.player_level = 0
             man_ogg.play(-1)
             restart_all()
             Settings.gun = 0
-            self.change_gun()
-        else:
-            man_ogg.stop()
+            
+
+            
+            
 
     def rotation_reverse(self):
         for ability in Tiles.abilities:
@@ -1092,7 +1093,7 @@ def restart_all():
 
     
     reset_dialogue()
-
+    
 
     player_group.sprite.reset_player()
 
@@ -1406,6 +1407,8 @@ while True:
             match Settings.playing_state:
                 case "start":
                     if not Settings.paused:
+                        if Settings.player_level > 0:
+                            man_ogg.stop()
                         player_group.sprite.reset_player()
                         
                         player_group.sprite.level_start_dialogue()

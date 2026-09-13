@@ -238,7 +238,11 @@ def gun_button_generation():
 
             
 
+            
+
         return gun_group
+
+
 
 def lock_gun_image(total_stars):
     for button in gun_group:
