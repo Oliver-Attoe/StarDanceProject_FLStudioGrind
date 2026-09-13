@@ -134,6 +134,10 @@ bullet_font = pygame.font.Font(None, 55)
 
 flash_surface = pygame.image.load("Game/Images/Flash.png").convert_alpha()
 
+g_button_pressed = pygame.image.load("Game/Images/green_button_pressed.png")
+p_button_pressed = pygame.image.load("Game/Images/purple_button_pressed.png")
+w_button_pressed = pygame.image.load("Game/Images/white_button_pressed.png")
+
 
 
 

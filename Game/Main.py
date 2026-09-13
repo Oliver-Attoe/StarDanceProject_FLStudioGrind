@@ -305,7 +305,7 @@ class Player(pygame.sprite.Sprite):
             if vn < 0:
                 self.velocity -= axis * vn
 ###################################################################
-            #Ground / ceiling
+            
             if axis.y < -0.7:
                 self.grounded = True
                 self.rot_speed = 0
@@ -510,9 +510,6 @@ class Player(pygame.sprite.Sprite):
 
         for button in Tiles.buttons:
 
-            if button["pressed"]:
-                continue
-
             if button["name"] == "purple_button":
                 image = purple_button
 
@@ -534,7 +531,18 @@ class Player(pygame.sprite.Sprite):
 
             button_rect = self.get_button_rect(button)
 
-            screen.blit(rotated_image, button_rect.topleft)
+            if not button["pressed"]:
+                screen.blit(rotated_image, button_rect.topleft)
+
+            else:
+                if button["name"] == "purple_button":
+                    screen.blit(p_button_pressed,button_rect.topleft)
+
+                if button["name"] == "green_button":
+                    screen.blit(g_button_pressed, button_rect.topleft)
+
+                if button["name"] == "white_button":
+                    screen.blit(w_button_pressed, button_rect.topleft)
 
 
     def button_detection_gun(self):
