@@ -42,8 +42,7 @@ class Dialogue(pygame.sprite.Sprite):
                         if dialogue_type == "start":
                             return "Strange, there is a man here..."
                         elif dialogue_type == "won":
-                            return "You recieve an egg... and a new gun skin"
-
+                            return "You recieve an egg."
                     case 1:
                         if dialogue_type == "start":
                             return "Use mouse to aim your first shot, fire with enter or left mouse click. Hold r to restart"

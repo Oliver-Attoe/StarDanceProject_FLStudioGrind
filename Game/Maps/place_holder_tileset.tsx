@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.2" name="place_holder_tileset" tilewidth="16" tileheight="16" tilecount="21" columns="0">
+<tileset version="1.10" tiledversion="1.12.2" name="place_holder_tileset" tilewidth="16" tileheight="16" tilecount="22" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <transformations hflip="1" vflip="1" rotate="1" preferuntransformed="0"/>
  <tile id="0">
@@ -64,5 +64,8 @@
  </tile>
  <tile id="22">
   <image source="../Images/Tiles/black_base.png" width="16" height="16"/>
+ </tile>
+ <tile id="23">
+  <image source="../Images/Tiles/Tile_down.png" width="16" height="16"/>
  </tile>
 </tileset>

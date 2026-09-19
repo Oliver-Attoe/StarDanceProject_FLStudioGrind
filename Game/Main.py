@@ -532,17 +532,25 @@ class Player(pygame.sprite.Sprite):
             button_rect = self.get_button_rect(button)
 
             if not button["pressed"]:
-                screen.blit(rotated_image, button_rect.topleft)
-
+                image_rect = rotated_image.get_rect(center=button_rect.center)
+                screen.blit(rotated_image, image_rect)
             else:
                 if button["name"] == "purple_button":
-                    screen.blit(p_button_pressed,button_rect.topleft)
+                    pressed_image = pygame.transform.rotate(p_button_pressed, -rotation)
+                    image_rect = pressed_image.get_rect(center=button_rect.center)
+                    screen.blit(pressed_image, image_rect)
 
-                if button["name"] == "green_button":
-                    screen.blit(g_button_pressed, button_rect.topleft)
+                elif button["name"] == "green_button":
+                    pressed_image = pygame.transform.rotate(g_button_pressed, -rotation)
+                    image_rect = pressed_image.get_rect(center=button_rect.center)
+                    screen.blit(pressed_image, image_rect)
 
-                if button["name"] == "white_button":
-                    screen.blit(w_button_pressed, button_rect.topleft)
+                elif button["name"] == "white_button":
+                    pressed_image = pygame.transform.rotate(w_button_pressed, -rotation)
+                    image_rect = pressed_image.get_rect(center=button_rect.center)
+                    screen.blit(pressed_image, image_rect)
+
+                pygame.draw.rect(screen, "red", button_rect, 2)
 
 
     def button_detection_gun(self):
@@ -575,7 +583,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.original_image
 
     def load_room(self):
-        if random.random() < 0.9:
+        if random.random() < 0.03:
             man_ogg.stop()
             Settings.player_level = 0
             man_ogg.play(-1)
@@ -859,7 +867,7 @@ class Player(pygame.sprite.Sprite):
         self.mini_star()
         self.load_flash()
         #pygame.draw.circle(screen, "red", self.barrel_position(), 5)
-
+        
         
 
 
@@ -1035,7 +1043,7 @@ def restart_all():
     global bonus_time
 
     
-    BetaStats.level_restarts[Settings.player_level - 1] += 1
+    #BetaStats.level_restarts[Settings.player_level - 1] += 1
     
 
     for bullet in bullet_group:
@@ -1295,13 +1303,13 @@ while True:
 
 
 
-        if event.type == pygame.KEYDOWN:
-            BetaStats.set_difficulty(event.key)
+        #if event.type == pygame.KEYDOWN:
+            #BetaStats.set_difficulty(event.key)
 
-        if event.type == pygame.KEYDOWN:
+        #if event.type == pygame.KEYDOWN:
 
-            if event.key == pygame.K_SLASH:
-                BetaStats.save_stats()
+            #if event.key == pygame.K_SLASH:
+                #BetaStats.save_stats()
 
         if event.type == pygame.KEYDOWN and Waiver.text_active:
 
@@ -1448,11 +1456,11 @@ while True:
         case "has_won":
             Settings.level_lock()
 
-            BetaStats.level_time[Settings.player_level - 1] = timer.time_passed / 1000
-            BetaStats.level_bullet_count[Settings.player_level - 1] = [
-                Settings.bullet_count,
-                bullet_max
-            ]
+            #BetaStats.level_time[Settings.player_level - 1] = timer.time_passed / 1000
+            #BetaStats.level_bullet_count[Settings.player_level - 1] = [
+                #Settings.bullet_count,
+                #bullet_max
+            #]
 
             
 
@@ -1513,31 +1521,6 @@ while True:
         screen.blit(cont_surface, cont_rect)
         screen.blit(level_button, level_button_rect)
 
-
-
-    
-
-    
-    
-    # grid_surface = pygame.Surface((1200, 800), pygame.SRCALPHA)
-
-    # for x in range(0, 1201, 50):
-    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
-
-    # for y in range(0, 801, 50):
-    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
-
-    # grid_font = pygame.font.Font(None, 18)
-
-    # for x in range(0, 1201, 50):
-    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (x, 0), (x, 800))
-    #     grid_surface.blit(grid_font.render(str(x), True, (255, 0, 0)), (x + 2, 2))
-
-    # for y in range(0, 801, 50):
-    #     pygame.draw.line(grid_surface, (255, 0, 0, 100), (0, y), (1200, y))
-    #     grid_surface.blit(grid_font.render(str(y), True, (255, 0, 0)), (2, y + 2))
-
-    #screen.blit(grid_surface, (0, 0))
 
 
     bullet_text = bullet_font.render(
