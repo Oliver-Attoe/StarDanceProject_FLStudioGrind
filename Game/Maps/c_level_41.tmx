@@ -78,7 +78,7 @@
     <property name="obj_type" value="bad_guy"/>
    </properties>
   </object>
-  <object id="6" name="white_button" x="856.121" y="17.3304" width="132.71" height="43.4324">
+  <object id="6" name="white_button" x="957.642" y="59.3055" width="132.71" height="43.4324" rotation="180">
    <properties>
     <property name="obj_type" value="button"/>
    </properties>

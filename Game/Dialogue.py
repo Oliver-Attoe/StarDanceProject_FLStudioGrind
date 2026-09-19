@@ -63,7 +63,7 @@ class Dialogue(pygame.sprite.Sprite):
 
                     case 4:
                         if dialogue_type == "start":
-                            return "I'm sure you can guess what will happen if you colide with those _______"
+                            return "I'm sure you can guess what will happen if you colide with those spikes"
                         elif dialogue_type == "won":
                             return "Good Job!"
 
@@ -95,11 +95,11 @@ class Dialogue(pygame.sprite.Sprite):
                         if dialogue_type == "start":
                             ""
                         elif dialogue_type == "won":
-                            "Congratulations! You've mastered using the buttons."
+                            "Congratulations! You've mastered using buttons."
 
                     case 10:
                         if dialogue_type == "start":
-                            return "Maybe a slower approach could help you out"
+                            return "Maybe a slower approach could help you"
                         elif dialogue_type == "won":
                             return ""
 
@@ -327,7 +327,7 @@ class Dialogue(pygame.sprite.Sprite):
 
                     case 48:
                         if dialogue_type == "start":
-                            "Final 3"
+                            return "Final 3"
                         elif dialogue_type == "won":
                             ""
 
@@ -339,9 +339,9 @@ class Dialogue(pygame.sprite.Sprite):
 
                     case 50:
                         if dialogue_type == "start":
-                            return "YOUR FINAL CHALLENGE"
+                            return "NOTE IDK IF THIS IS POSSIBLE, IT's AN EXPERIMENT"
                         elif dialogue_type == "won":
-                            return ""
+                            return "HOWWW?"
 
         return ""
 

@@ -38,15 +38,15 @@ pause_menu_rect = pause_menu.get_rect(center=(600, 400))
 
 home_surface = pygame.image.load("Game/Images/Home_button.png")
 
-home_rect = home_surface.get_rect(center=(600, 400))
+home_rect = home_surface.get_rect(center=(550, 400))
 
 cont_surface = pygame.image.load("Game/Images/continue_button.png")
 
-cont_rect = cont_surface.get_rect(center=(700, 400))
+cont_rect = cont_surface.get_rect(center=(650, 400))
 
 level_button = pygame.image.load("Game/Images/Level_button_pause.png")
 
-level_button_rect = level_button.get_rect(center=(500, 400))
+level_button_rect = level_button.get_rect(center=(450, 400))
 
 level_button_rect2 = level_button.get_rect(bottomleft=(10, 790))
 
@@ -58,7 +58,7 @@ loss_screen_rect = loss_screen.get_rect(center=(600, 400))
 
 restart_button = pygame.image.load("Game/Images/Restart_button.png")
 
-restart_button_rect = restart_button.get_rect(center=(600, 400))
+restart_button_rect = restart_button.get_rect(center=(600, 450))
 
 win_screen = pygame.image.load("Game/Images/Win_screen.png")
 
@@ -138,6 +138,9 @@ flash_surface = pygame.image.load("Game/Images/Flash.png").convert_alpha()
 g_button_pressed = pygame.image.load("Game/Images/green_button_pressed.png")
 p_button_pressed = pygame.image.load("Game/Images/purple_button_pressed.png")
 w_button_pressed = pygame.image.load("Game/Images/white_button_pressed.png")
+
+skip_surface = pygame.image.load("Game/Images/Skip.png")
+skip_rect = skip_surface.get_rect(center = (750, 400))
 
 
 

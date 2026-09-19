@@ -66,7 +66,7 @@
     <property name="ability_type" value="bullet_pickup"/>
    </properties>
   </object>
-  <object id="3" name="white_button" x="69.9744" y="13.271" width="132.71" height="43.4324">
+  <object id="3" name="white_button" x="191.019" y="54.2699" width="132.71" height="43.4324" rotation="180">
    <properties>
     <property name="obj_type" value="button"/>
    </properties>

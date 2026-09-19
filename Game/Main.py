@@ -255,6 +255,10 @@ class Player(pygame.sprite.Sprite):
 
 
         for tile in near_tiles:
+
+            if tile["property"].get("type") == "Orange" or tile["property"].get("type") == "Blue":
+                continue
+
             tile_poly = self.rect_to_poly(tile["rect"])
 
             collided, response = self.polygon_collision(
@@ -271,11 +275,7 @@ class Player(pygame.sprite.Sprite):
                 Settings.game_state = "lost"
                 return
 
-            #if tile["property"].get("type") == "Blue":
-                #return
 
-            #if tile["property"].get("type") == "Orange":
-                #return
 
 
 
@@ -386,9 +386,8 @@ class Player(pygame.sprite.Sprite):
 
         if self.portal_cooldown > 0:
             self.portal_cooldown -= 1
-###section encolsed in #### was written by AI ###
-        for portal in Tiles.portals:
 
+        for portal in Tiles.portals:
 
             if self.portal_cooldown <= 0 and self.rect.colliderect(portal["rect"]):
 
@@ -419,24 +418,14 @@ class Player(pygame.sprite.Sprite):
                 speed = self.velocity.length()
 
                 if speed > 0:
-                    self.velocity = direction * min(speed, 15)
+                    self.velocity = direction * min(speed, 12)
 
-                # Spawn just outside the destination portal
-                if exit_angle == 0:          # Up
-                    self.pos.x = destination["rect"].centerx
-                    self.pos.y = destination["rect"].top - self.rect.height / 2 - 2
+                # Start at portal centre
+                self.pos = pygame.Vector2(destination["rect"].center)
 
-                elif exit_angle == 90:       # Left
-                    self.pos.x = destination["rect"].left - self.rect.width / 2 - 2
-                    self.pos.y = destination["rect"].centery
-
-                elif exit_angle == 180:      # Down
-                    self.pos.x = destination["rect"].centerx
-                    self.pos.y = destination["rect"].bottom + self.rect.height / 2 + 2
-
-                elif exit_angle == 270:      # Right
-                    self.pos.x = destination["rect"].right + self.rect.width / 2 + 2
-                    self.pos.y = destination["rect"].centery
+                # Push player OUT of the portal
+                offset = max(self.rect.width, self.rect.height) / 2 + 3
+                self.pos += direction * offset
 
                 self.rect.center = self.pos
                 self.get_global_polygon()
@@ -444,7 +433,6 @@ class Player(pygame.sprite.Sprite):
                 self.portal_cooldown = 50
 
                 break
-
 
     def clock_image_load(self):
         for clock in Tiles.abilities:
@@ -1207,12 +1195,20 @@ while True:
                         Settings.game_state = "start_menu"
                         start_music = True
 
-                    if cont_rect.collidepoint(event.pos):
+                    if Settings.paused and cont_rect.collidepoint(event.pos):
                         Settings.paused = False
                         timer.resume()
 
-                    if Settings.paused:
-                        if level_button_rect.collidepoint(event.pos):
+                    if  Settings.paused and skip_rect.collidepoint(event.pos):
+                        
+                        Settings.player_level += 1
+                        Settings.paused = False
+                        Settings.game_state = "playing"
+                        Settings.playing_state = "start"
+                        restart_all()
+                        continue
+
+                    if Settings.paused and level_button_rect.collidepoint(event.pos):
                             Settings.game_state = "selecting_level"
 
                 case "selecting_level":
@@ -1589,6 +1585,7 @@ while True:
         screen.blit(home_surface, home_rect)
         screen.blit(cont_surface, cont_rect)
         screen.blit(level_button, level_button_rect)
+        screen.blit(skip_surface, skip_rect)
 
 
 

@@ -82,7 +82,7 @@
     <property name="portal_type" value="portal"/>
    </properties>
   </object>
-  <object id="6" name="white_button" x="898.809" y="341.427" width="132.71" height="43.4324" rotation="90">
+  <object id="6" name="white_button" x="855.858" y="526.898" width="132.71" height="43.4324" rotation="270">
    <properties>
     <property name="obj_type" value="button"/>
    </properties>

@@ -7,23 +7,12 @@
     <property name="ability_type" value="reverse_rotation"/>
    </properties>
   </object>
-  <object id="3" name="time_stop" type="clock" x="1057.87" y="73.4068" width="80" height="80">
-   <properties>
-    <property name="ability_type" value="clock"/>
-   </properties>
-   <ellipse/>
-  </object>
-  <object id="4" name="slow_time" x="1012.38" y="163.717" width="60" height="90">
-   <properties>
-    <property name="ability_type" value="slow_time"/>
-   </properties>
-  </object>
   <object id="6" name="white_button" x="774.486" y="288.027" width="128" height="32">
    <properties>
     <property name="obj_type" value="button"/>
    </properties>
   </object>
-  <object id="7" name="green_button" x="414.962" y="629.453" width="128" height="32" rotation="270">
+  <object id="7" name="green_button" x="445.223" y="497.671" width="128" height="32" rotation="90">
    <properties>
     <property name="obj_type" value="button"/>
    </properties>

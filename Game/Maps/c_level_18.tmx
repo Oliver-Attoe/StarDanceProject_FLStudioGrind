@@ -61,7 +61,7 @@
     <property name="obj_type" value="button"/>
    </properties>
   </object>
-  <object id="2" name="white_button" x="1184.74" y="325.743" width="132.71" height="43.4324" rotation="90">
+  <object id="2" name="white_button" x="1148.63" y="411.646" width="132.71" height="43.4324" rotation="270">
    <properties>
     <property name="obj_type" value="button"/>
    </properties>

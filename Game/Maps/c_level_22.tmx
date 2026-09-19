@@ -56,7 +56,7 @@
 </data>
  </layer>
  <objectgroup id="2" name="object_layer">
-  <object id="1" name="white_button" x="314.884" y="698.537" width="132.71" height="43.4324" rotation="270">
+  <object id="1" name="white_button" x="355.883" y="570.659" width="132.71" height="43.4324" rotation="90">
    <properties>
     <property name="obj_type" value="button"/>
    </properties>
