@@ -588,7 +588,7 @@ class Player(pygame.sprite.Sprite):
             Settings.player_level = 0
             man_ogg.play(-1)
             restart_all()
-            Settings.gun = 0
+            
             
 
             
@@ -1173,8 +1173,9 @@ while True:
                         Settings.paused = False
                         timer.resume()
 
-                    if level_button_rect.collidepoint(event.pos):
-                        Settings.game_state = "selecting_level"
+                    if Settings.paused:
+                        if level_button_rect.collidepoint(event.pos):
+                            Settings.game_state = "selecting_level"
 
                 case "selecting_level":
 

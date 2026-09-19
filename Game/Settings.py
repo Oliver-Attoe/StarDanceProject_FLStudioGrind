@@ -16,7 +16,7 @@ slow_time_duration = 3000
 slow_time_start = 0
 slow_time_active = False
 
-total_stars = 0
+total_stars = 150
 level_stars = [[False, False, False] for _ in range(levels)]
 
 def level_lock():
@@ -750,13 +750,29 @@ def level_load():
 
 def set_gun_image():
 
-	match gun:
-		case 0:
-			return "GUN0.png"
+    match gun:
 
-		case 1:
-			return "GUN.png"
+        case 1:
+            return "GUN1.png"
 
-		case 2:
-			return "GUN2.png"
+        case 2:
+            return "GUN2.png"
+
+        case 3:
+            return "GUN3.png"
+
+        case 4:
+            return "GUN4.png"
+
+        case 5:
+            return "GUN5.png"
+
+        case 6:
+            return "GUN6.png"
+
+        case 7:
+            return "GUN7.png"
+
+        case 8:
+            return "GUN8.png"
 

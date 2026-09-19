@@ -5,7 +5,7 @@ pygame.init()
 
 screen = pygame.display.set_mode((1200, 800))
 
-from Settings import levels, max_player_level, gun, total_stars, bullet_count, bullet_max 
+from Settings import levels, max_player_level, gun, total_stars, bullet_count, bullet_max , gun
 
 
 start_surface = pygame.image.load("Game/Images/Start_screen.png").convert()
@@ -245,10 +245,19 @@ def gun_button_generation():
 
 
 def lock_gun_image(total_stars):
-    for button in gun_group:
-        if total_stars < button.gun * 6:
-           screen.blit(locked_surface, button.rect)
 
+    for button in gun_group:
+
+        mini_gun_surface = pygame.image.load(
+            f"Game/Images/GUN{button.gun + 1}.png"
+        ).convert_alpha()
+
+        image_rect = mini_gun_surface.get_rect(center=button.rect.center)
+
+        screen.blit(mini_gun_surface, image_rect)
+
+        if total_stars < button.gun * 6:
+            screen.blit(locked_surface, button.rect)
 
 
 
