@@ -16,7 +16,7 @@ slow_time_duration = 3000
 slow_time_start = 0
 slow_time_active = False
 
-total_stars = 150
+total_stars = 0
 level_stars = [[False, False, False] for _ in range(levels)]
 
 def level_lock():

@@ -91,6 +91,8 @@ class Player(pygame.sprite.Sprite):
 
         self.flash_timer = 0
 
+        
+
 
     def follow_mouse(self):
         if Dialogue.dialogue_active[Settings.player_level - 1][0] == False:
@@ -148,6 +150,7 @@ class Player(pygame.sprite.Sprite):
         self.original_image,
         self.angle - 180
         )
+
 
         old_center = self.rect.center
         self.rect = self.image.get_rect(center=old_center)
@@ -268,11 +271,11 @@ class Player(pygame.sprite.Sprite):
                 Settings.game_state = "lost"
                 return
 
-            if tile["property"].get("type") == "Blue":
-                return
+            #if tile["property"].get("type") == "Blue":
+                #return
 
-            if tile["property"].get("type") == "Orange":
-                return
+            #if tile["property"].get("type") == "Orange":
+                #return
 
 
 
@@ -397,18 +400,29 @@ class Player(pygame.sprite.Sprite):
                     entry_angle = portal["portal_rotation"]
                     exit_angle = destination["portal_rotation"]
 
-                    if self.angle > 0:
-                        rotation_difference = entry_angle - exit_angle
-                    else:
-                        rotation_difference = -(entry_angle - exit_angle)
-
+                    rotation_difference = entry_angle - exit_angle
                     self.velocity.rotate_ip(rotation_difference)
 ###############################################################################
                     self.pos = pygame.Vector2(destination["rect"].center)
+
+                    if exit_angle == 0:          
+                        self.pos.y -= self.rect.height
+
+                    elif exit_angle == 90:       
+                        self.pos.x -= self.rect.width
+
+                    elif exit_angle == 180:      
+                        self.pos.y += self.rect.height
+
+                    elif exit_angle == 270:      
+                        self.pos.x += self.rect.width
+
                     self.rect.center = self.pos
                     self.get_global_polygon()
 
-                    self.portal_cooldown = 90
+                    self.portal_cooldown = 50
+
+
 
     def clock_image_load(self):
         for clock in Tiles.abilities:
@@ -447,6 +461,8 @@ class Player(pygame.sprite.Sprite):
         # Position
         self.pos = pygame.Vector2(start_x, start_y)
         self.rect.center = (start_x, start_y)
+
+
 
         # Movement / physics
         self.velocity = pygame.Vector2(0, 0)
@@ -1217,6 +1233,7 @@ while True:
 
                 case "has_won":
 
+                    
                     if dialogue.active:
 
                         if dialogue.word_index >= len(dialogue.word_list):
@@ -1341,6 +1358,8 @@ while True:
 #Non-events below
 ###################################################################################################################
 
+    
+
     match Settings.game_state:
         case "start_menu":
             Settings.paused = False
@@ -1450,12 +1469,15 @@ while True:
                         
 
         case "lost":
+
             screen.blit(loss_screen, loss_screen_rect)
             screen.blit(restart_button, restart_button_rect)
+            
 
 
         case "has_won":
             Settings.level_lock()
+
 
             #BetaStats.level_time[Settings.player_level - 1] = timer.time_passed / 1000
             #BetaStats.level_bullet_count[Settings.player_level - 1] = [
@@ -1472,11 +1494,35 @@ while True:
             player_group.sprite.bonus_time_star()
             player_group.sprite.bonus_bullet_star()
 
+
+
+            #if Settings.level_stars[Settings.player_level - 1][0] == True:
+
+            #if Settings.level_stars[Settings.player_level - 1][0] == True:
+
             if dialogue.active:
                 dialogue.display_text_bg()
                 dialogue.display_text()
 
             player_group.sprite.level_won_dialogue()
+
+            if Settings.level_stars[Settings.player_level - 1][2] == True:
+                
+                less_than_max_text = win_text_load.render (f"< {str(bullet_max)} bullets", True, "Green")
+
+            else:
+                less_than_max_text = win_text_load.render (f"< {str(bullet_max)} bullets", True, "Red")
+
+            screen.blit(less_than_max_text , (340, 400))
+
+            if Settings.level_stars[Settings.player_level - 1][2] == True:
+                
+                fast_time_text = win_text_load.render (f"< {str(bonus_time )} secs", True, "Green")
+
+            else:
+                fast_time_text = win_text_load.render (f"< {str(bonus_time )} secs", True, "Green")
+
+            screen.blit(fast_time_text, (655, 365))
 
 
         case "selecting_level":
@@ -1536,6 +1582,16 @@ while True:
     #print(BetaStats.level_restarts)
     #print(BetaStats.level_time)
     #print(BetaStats.level_difficulty)
+
+    font = pygame.font.Font(None, 18)
+
+    for x in range(0, 1200, 50):
+        pygame.draw.line(screen, "red", (x, 0), (x, 800), 1)
+
+        for y in range(0, 800, 50):
+            pygame.draw.line(screen, "red", (0, y), (1200, y), 1)
+            text = font.render(f"{x},{y}", True, "red")
+            screen.blit(text, (x + 2, y + 2))
     
     pygame.display.update()
     game_clock.tick(60)

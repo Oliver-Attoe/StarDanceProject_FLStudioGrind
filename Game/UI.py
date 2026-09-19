@@ -17,6 +17,7 @@ s_text = s_text_test.render("Barrel Roll Bullet", True, "Black")
 s_text_rect = s_text.get_rect(center=(600, 125))
 
 number_text_load = pygame.font.Font("Game/Images/DigitalDreamers-jy99.ttf", 30)
+win_text_load = pygame.font.Font("Game/Images/DigitalDreamers-jy99.ttf", 20)
 
 
 start_button = pygame.image.load("Game/Images/Button.png").convert()
@@ -65,7 +66,7 @@ win_screen_rect = win_screen.get_rect(center=(600, 400))
 
 next_level = pygame.image.load("Game/Images/Next_level.png")
 
-next_level_rect = next_level.get_rect(center=(600, 400))
+next_level_rect = next_level.get_rect(center=(600, 340))
 
 timer_text = pygame.font.Font("Game/Images/timer_text.ttf", 90)
 
