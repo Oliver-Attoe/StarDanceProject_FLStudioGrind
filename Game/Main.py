@@ -386,42 +386,64 @@ class Player(pygame.sprite.Sprite):
 
         if self.portal_cooldown > 0:
             self.portal_cooldown -= 1
-        
-        for portal in Tiles.portals:
-            if self.portal_cooldown <= 0:
-                if self.rect.colliderect(portal["rect"]):
-                
 ###section encolsed in #### was written by AI ###
-                    destination = next(
-                        p for p in Tiles.portals
-                        if p["portal_id"] == portal["portal_target"]
-                    )
+        for portal in Tiles.portals:
 
-                    entry_angle = portal["portal_rotation"]
-                    exit_angle = destination["portal_rotation"]
 
-                    rotation_difference = entry_angle - exit_angle
-                    self.velocity.rotate_ip(rotation_difference)
-###############################################################################
-                    self.pos = pygame.Vector2(destination["rect"].center)
+            if self.portal_cooldown <= 0 and self.rect.colliderect(portal["rect"]):
 
-                    if exit_angle == 0:          
-                        self.pos.y -= self.rect.height
+                destination = next(
+                    p for p in Tiles.portals
+                    if p["portal_id"] == portal["portal_target"]
+                )
 
-                    elif exit_angle == 90:       
-                        self.pos.x -= self.rect.width
+                exit_angle = destination["portal_rotation"]
 
-                    elif exit_angle == 180:      
-                        self.pos.y += self.rect.height
+                # Direction the destination portal faces
+                if exit_angle == 0:          # Up
+                    direction = pygame.Vector2(0, -1)
 
-                    elif exit_angle == 270:      
-                        self.pos.x += self.rect.width
+                elif exit_angle == 90:       # Left
+                    direction = pygame.Vector2(-1, 0)
 
-                    self.rect.center = self.pos
-                    self.get_global_polygon()
+                elif exit_angle == 180:      # Down
+                    direction = pygame.Vector2(0, 1)
 
-                    self.portal_cooldown = 50
+                elif exit_angle == 270:      # Right
+                    direction = pygame.Vector2(1, 0)
 
+                else:
+                    direction = pygame.Vector2(0, -1)
+
+                # Keep current speed, redirect velocity
+                speed = self.velocity.length()
+
+                if speed > 0:
+                    self.velocity = direction * min(speed, 15)
+
+                # Spawn just outside the destination portal
+                if exit_angle == 0:          # Up
+                    self.pos.x = destination["rect"].centerx
+                    self.pos.y = destination["rect"].top - self.rect.height / 2 - 2
+
+                elif exit_angle == 90:       # Left
+                    self.pos.x = destination["rect"].left - self.rect.width / 2 - 2
+                    self.pos.y = destination["rect"].centery
+
+                elif exit_angle == 180:      # Down
+                    self.pos.x = destination["rect"].centerx
+                    self.pos.y = destination["rect"].bottom + self.rect.height / 2 + 2
+
+                elif exit_angle == 270:      # Right
+                    self.pos.x = destination["rect"].right + self.rect.width / 2 + 2
+                    self.pos.y = destination["rect"].centery
+
+                self.rect.center = self.pos
+                self.get_global_polygon()
+
+                self.portal_cooldown = 50
+
+                break
 
 
     def clock_image_load(self):
@@ -566,7 +588,7 @@ class Player(pygame.sprite.Sprite):
                     image_rect = pressed_image.get_rect(center=button_rect.center)
                     screen.blit(pressed_image, image_rect)
 
-                pygame.draw.rect(screen, "red", button_rect, 2)
+
 
 
     def button_detection_gun(self):
@@ -1583,16 +1605,7 @@ while True:
     #print(BetaStats.level_time)
     #print(BetaStats.level_difficulty)
 
-    font = pygame.font.Font(None, 18)
 
-    for x in range(0, 1200, 50):
-        pygame.draw.line(screen, "red", (x, 0), (x, 800), 1)
-
-        for y in range(0, 800, 50):
-            pygame.draw.line(screen, "red", (0, y), (1200, y), 1)
-            text = font.render(f"{x},{y}", True, "red")
-            screen.blit(text, (x + 2, y + 2))
-    
     pygame.display.update()
     game_clock.tick(60)
     

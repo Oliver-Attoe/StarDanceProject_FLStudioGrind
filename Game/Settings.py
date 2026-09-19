@@ -223,7 +223,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
-            bonus_time = 0
+            bonus_time = 5
 
         case 14:
             map_file = "Game/Maps/c_level_14.tmx"
@@ -237,7 +237,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
-            bonus_time = 0
+            bonus_time = 3
 
         case 15:
             map_file = "Game/Maps/c_level_15.tmx"
@@ -251,7 +251,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
-            bonus_time = 0
+            bonus_time = 11
 
         case 16:
             map_file = "Game/Maps/c_level_16.tmx"
@@ -265,7 +265,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
-            bonus_time = 0
+            bonus_time = 9
 
         case 17:
             map_file = "Game/Maps/c_level_17.tmx"
@@ -279,7 +279,7 @@ def level_load():
             m_stars_required = 0
             kill_is_req = False
             kills_req = 0
-            bonus_time = 0
+            bonus_time = 6
 
         case 18:
             map_file = "Game/Maps/c_level_18.tmx"
