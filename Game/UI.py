@@ -5,7 +5,6 @@ pygame.init()
 
 screen = pygame.display.set_mode((1200, 800))
 
-from Settings import levels, max_player_level, gun, total_stars, bullet_count, bullet_max , gun
 
 
 start_surface = pygame.image.load("Game/Images/Start_screen.png").convert()
@@ -14,7 +13,7 @@ s_text_test = pygame.font.Font("Game/Images/SpyAgencyBoldItalic-BLLnV.otf", 60)
 
 s_text = s_text_test.render("Barrel Roll Bullet", True, "Black")
 
-s_text_rect = s_text.get_rect(center=(600, 125))
+s_text_rect = s_text.get_rect(center=(600, 60))
 
 number_text_load = pygame.font.Font("Game/Images/DigitalDreamers-jy99.ttf", 30)
 win_text_load = pygame.font.Font("Game/Images/DigitalDreamers-jy99.ttf", 20)
@@ -117,7 +116,7 @@ ghost_bullet = pygame.image.load("Game/Images/ghost_bullet.png")
 
 gun_select = pygame.image.load("Game/Images/gun_select.png")
 
-gun_select_rect = gun_select.get_rect(midbottom=(600, 800))
+gun_select_rect = gun_select.get_rect(center=(600, 760))
 
 gun_select_bg = pygame.image.load("Game/Images/gun_select_BG.png")
 
@@ -125,7 +124,7 @@ go_back = pygame.image.load("Game/Images/Go_back.png")
 
 go_back_rect = go_back.get_rect(topright=(1200, 0))
 
-waiver_text_box = pygame.Rect(900, 200, 250, 500)
+waiver_text_box = pygame.Rect(900, 200, 250, 300)
 
 get_hint_surface = pygame.image.load("Game/Images/Get_hint.png")
 

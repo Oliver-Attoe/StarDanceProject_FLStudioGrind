@@ -1,5 +1,6 @@
 
 import pygame
+
 pygame.mixer.init()
 
 
@@ -31,14 +32,31 @@ down_gravity_fx.set_volume(1)
 break_fx = pygame.mixer.Sound("Game/Sounds/broken_crate.mp3")
 
 death_fx = pygame.mixer.Sound("Game/Sounds/death sound.mp3")
+start_music_fx = pygame.mixer.Sound("Game/Sounds/start_fx.mp3")
 
+start_music_fx = pygame.mixer.Sound("Game/Sounds/start_fx.mp3")
+playing_music_fx = pygame.mixer.Sound("Game/Sounds/playing_fx.mp3")
 
-start_music = True
 
 def play_music():
+    playing_music_fx.stop()
 
-    pygame.mixer.music.load("Game/Sounds/human_music.mp3")
+    if not start_music_fx.get_num_channels():
+        start_music_fx.play(-1)
 
-    pygame.mixer.music.play(-1)
+
+def play_music_playing():
+    start_music_fx.stop()
+
+    if not playing_music_fx.get_num_channels():
+        playing_music_fx.play(-1)
+
+
+def stop_music():
+    start_music_fx.stop()
+    playing_music_fx.stop()
+
+
+
 
 

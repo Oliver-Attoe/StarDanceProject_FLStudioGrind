@@ -1,18 +1,11 @@
-import pygame
-from sys import exit
-import math
-import Settings
-from UI import *
-from SOUNDS import *
-import Timer
-import Tiles
-import random
-import Waiver
-import Dialogue
-import webbrowser
 import json
 import os
 
+import pygame
+import Settings
+import Timer
+from SOUNDS import *
+from UI import *
 
 timer = Timer.Stopwatch()
 

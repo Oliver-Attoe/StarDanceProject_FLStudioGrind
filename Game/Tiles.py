@@ -2,7 +2,6 @@ import pygame
 import pytmx
 from pytmx.util_pygame import load_pygame
 
-
 tmx_data = None
 tiles = []
 open_gates = set()

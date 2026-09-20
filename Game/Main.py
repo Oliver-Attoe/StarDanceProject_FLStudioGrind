@@ -1,16 +1,17 @@
-import pygame
-from sys import exit
 import math
-import Settings
-from UI import *
-from SOUNDS import *
-import Timer
-import Tiles
 import random
-import Waiver
-import Dialogue
 import webbrowser
-import BetaStats
+from sys import exit
+
+import Dialogue
+import pygame
+import Settings
+import Tiles
+import Timer
+import Waiver
+from SOUNDS import *
+from UI import *
+
 #Imports ONLY
 ###############################################################################################################
 
@@ -25,6 +26,8 @@ map_file, start_x, start_y, bullet_max, goal_x, goal_y, m_stars, m_stars_require
 star, star_rect, star_polygon = create_star(goal_x, goal_y)
 
 dialogue = Dialogue.Dialogue()
+
+previous_game_state = None
 
 
 timer = Timer.Stopwatch()
@@ -964,8 +967,7 @@ class Bullet(pygame.sprite.Sprite):
 
         for tile in Tiles.tiles:
 
-            if self.rect.colliderect(tile["rect"]):
-                if tile["property"].get("type") == "Breakable":
+            if self.rect.colliderect(tile["rect"]) and tile["property"].get("type") == "Breakable":
 
                     if "Breakable" not in Tiles.broken_tiles:
                         break_fx.play()
@@ -1242,12 +1244,10 @@ while True:
 
                     for button in gun_selection:
 
-                        if button.rect.collidepoint(event.pos):
-
-                            if Settings.total_stars >= button.gun * 6:
-                                Settings.gun = button.gun + 1
-                                player_group.sprite.change_gun()
-                                Settings.game_state = "start_menu"
+                        if button.rect.collidepoint(event.pos) and Settings.total_stars >= button.gun * 6:
+                            Settings.gun = button.gun + 1
+                            player_group.sprite.change_gun()
+                            Settings.game_state = "start_menu"
 
                 case "lost":
 
@@ -1298,9 +1298,7 @@ while True:
 
                     feild_count = Waiver.all_fields_filled()
 
-                    if feild_count >= 5:
-
-                        if get_hint_rect.collidepoint(event.pos):
+                    if feild_count >= 5 and get_hint_rect.collidepoint(event.pos):
                             webbrowser.open(
                                 "https://youtu.be/dQw4w9WgXcQ?si=tpj35XmZbQUUiyly"
                             )
@@ -1401,20 +1399,18 @@ while True:
             
 
             
-            if start_music == True:
+            if previous_game_state != Settings.game_state:
                 play_music()
-                start_music = False
 
         
         case "playing":
 
 
-            
-            
-            if start_music == False:
-                pygame.mixer.music.stop()
+            if previous_game_state != Settings.game_state:
+                play_music_playing()            
 
-            
+
+
 
             screen.blit(bg_surface, (0,0))
             
@@ -1424,6 +1420,14 @@ while True:
             Tiles.draw_map(screen)
 
             screen.blit(pause_surface, pause_rect)
+
+            bullet_text = bullet_font.render(
+                f"Bullets: {Settings.bullet_count}/{bullet_max}",
+                True,
+                "white"
+            )
+
+            screen.blit(bullet_text, (20, 20))
 
 
             if Settings.paused == False:
@@ -1490,13 +1494,14 @@ while True:
                                 Settings.playing_state = "start"
                                 restart_all()
 
-                        if Settings.slow_time_active:
-                            if pygame.time.get_ticks() - Settings.slow_time_start >= 4500:
+                        if Settings.slow_time_active and pygame.time.get_ticks() - Settings.slow_time_start >= 4500:
                                 Settings.time_multiplyer = 1.0
                                 Settings.slow_time_active = False
                         
 
         case "lost":
+
+            stop_music()
 
             screen.blit(loss_screen, loss_screen_rect)
             screen.blit(restart_button, restart_button_rect)
@@ -1510,6 +1515,9 @@ while True:
 
 
         case "has_won":
+
+            stop_music()
+
             Settings.level_lock()
 
 
@@ -1549,24 +1557,27 @@ while True:
 
             if Settings.level_stars[Settings.player_level - 1][2] == True:
                 
-                less_than_max_text = win_text_load.render (f"< {str(bullet_max)} bullets", True, "Green")
+                less_than_max_text = win_text_load.render (f"< {bullet_max!s} bullets", True, "Green")
 
             else:
-                less_than_max_text = win_text_load.render (f"< {str(bullet_max)} bullets", True, "Red")
+                less_than_max_text = win_text_load.render (f"< {bullet_max!s} bullets", True, "Red")
 
             screen.blit(less_than_max_text , (340, 400))
 
             if Settings.level_stars[Settings.player_level - 1][2] == True:
                 
-                fast_time_text = win_text_load.render (f"< {str(bonus_time )} secs", True, "Green")
+                fast_time_text = win_text_load.render (f"< {bonus_time!s} secs", True, "Green")
 
             else:
-                fast_time_text = win_text_load.render (f"< {str(bonus_time )} secs", True, "Green")
+                fast_time_text = win_text_load.render (f"< {bonus_time!s} secs", True, "Green")
+
 
             screen.blit(fast_time_text, (655, 365))
 
 
         case "selecting_level":
+            stop_music()
+
             Settings.paused = False
             screen.blit(level_select_BG, (0,0))
             level_selection.draw(screen)
@@ -1575,12 +1586,15 @@ while True:
 
 
         case "getting_hint":
+            stop_music()
+
             screen.blit(hint_bg, (0,0))
             screen.blit(Waiver.signature_surface, Waiver.signature_rect)
             screen.blit(go_back, go_back_rect)
             check_boxes.draw(screen)
             screen.blit(waiver_text_render, waiver_rect)
             screen.blit(get_hint_surface, get_hint_rect)
+            Waiver.draw_field_boxes()
             for box in check_boxes:
                 if box.checked:
                     screen.blit(checked_box, box.rect)
@@ -1597,12 +1611,14 @@ while True:
 
 
         case "gun_select":
+            stop_music()
             screen.blit(gun_select_bg, (0,0))
             gun_selection.draw(screen)
             lock_gun_image(Settings.total_stars)
 
     
     if Settings.paused:
+        stop_music()
             
         screen.blit(pause_menu, pause_menu_rect)
         screen.blit(home_surface, home_rect)
@@ -1612,14 +1628,8 @@ while True:
 
 
 
-    bullet_text = bullet_font.render(
-        f"Bullets: {Settings.bullet_count}/{bullet_max}",
-        True,
-        "pink"
-    )
 
-    screen.blit(bullet_text, (20, 20))
-
+    previous_game_state = Settings.game_state
     #print(BetaStats.level_bullet_count)
     #print(BetaStats.level_restarts)
     #print(BetaStats.level_time)

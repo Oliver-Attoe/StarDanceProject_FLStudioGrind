@@ -1,4 +1,5 @@
 import pygame
+
 pygame.init()
 screen = pygame.display.set_mode((1200, 800))
 import Settings
@@ -53,11 +54,11 @@ class Dialogue(pygame.sprite.Sprite):
                         if dialogue_type == "start":
                             return "If you get stuck, you can hold a to re-align yourself"
                         elif dialogue_type == "won":
-                            return "Each level has a bullet count and time completed bonus objective, giving you a star.."
+                            return "Each level has a bullet count and time completed bonus objective, giving you a coin"
 
                     case 3:
                         if dialogue_type == "start":
-                            ""
+                            "Have enough coins and you'll earn some gun Skins"
                         elif dialogue_type == "won":
                             "Well done! You've mastered the basics"
 
@@ -68,9 +69,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return "Good Job!"
 
                     case 5:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 6:
@@ -86,9 +85,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 8:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 9:
@@ -104,9 +101,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 11:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 12:
@@ -122,9 +117,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 14:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 15:
@@ -140,9 +133,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 17:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 18:
@@ -158,9 +149,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 20:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 21:
@@ -176,9 +165,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 23:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 24:
@@ -194,9 +181,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 26:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 27:
@@ -212,9 +197,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 29:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 30:
@@ -230,9 +213,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 32:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 33:
@@ -248,9 +229,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 35:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 36:
@@ -266,9 +245,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 38:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 39:
@@ -284,9 +261,7 @@ class Dialogue(pygame.sprite.Sprite):
                             return ""
 
                     case 41:
-                        if dialogue_type == "start":
-                            return ""
-                        elif dialogue_type == "won":
+                        if dialogue_type == "start" or dialogue_type == "won":
                             return ""
 
                     case 42:
@@ -378,11 +353,9 @@ class Dialogue(pygame.sprite.Sprite):
 
         current_time = pygame.time.get_ticks()
 
-        if self.word_index < len(self.word_list):
-
-            if current_time - self.last_word_time >= self.text_delay:
-                self.word_index += 1
-                self.last_word_time = current_time
+        if self.word_index < len(self.word_list) and current_time - self.last_word_time >= self.text_delay:
+            self.word_index += 1
+            self.last_word_time = current_time
 
 
 

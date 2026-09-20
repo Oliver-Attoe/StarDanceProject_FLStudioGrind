@@ -1,6 +1,7 @@
 import pygame
 from UI import timer_text
 
+
 class Stopwatch:
     def __init__(self):
         super().__init__()

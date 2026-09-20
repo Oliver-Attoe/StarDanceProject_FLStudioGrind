@@ -1,5 +1,5 @@
 import pygame
-from UI import checked_box, screen, waiver_text_box
+from UI import screen, waiver_text_box
 
 last_position = None
 signature_surface = pygame.Surface((500, 250), pygame.SRCALPHA)
@@ -16,7 +16,7 @@ new_waiver_text = pygame.font.Font("Game/Images/Times_new.ttf", 30)
 ###section encolsed in #### was written by AI ###
 def draw_signature(signing):
     global last_position
-    global signature_surface
+
     
 
     mouse_position = pygame.mouse.get_pos()
@@ -124,4 +124,21 @@ def all_fields_filled():
 
     return field_count
 
+
+def draw_field_boxes():
+
+    pygame.draw.rect(
+        screen,
+        "Black",
+        signature_rect.inflate(10, 10),
+        3
+    )
+
+
+    pygame.draw.rect(
+        screen,
+        "Black",
+        waiver_text_box.inflate(10, 10),
+        3
+    )
 

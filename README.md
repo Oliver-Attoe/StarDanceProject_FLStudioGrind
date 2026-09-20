@@ -1,6 +1,8 @@
-Barrel Role Bullet
+Barrel Roll Bullet
 
-A chaotic and precice platformer where movement is controlled through gun recoil.
+Aim, shoot, spin and soar! Navigate your way through levels, using a large variety of abilities to help you along the way.
+
+This game is not easy, excelling requires a fast reaction time
 
 
 
