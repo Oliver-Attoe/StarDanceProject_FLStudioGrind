@@ -681,7 +681,11 @@ class Player(pygame.sprite.Sprite):
             if self.rect.colliderect(ability["rect"]):
                 ability["collected"] = True
                 Settings.time_multiplyer = 0.4
-                slow_time_fx.play()
+                if Settings.slow_time_active:
+                    slow_time_fx.stop()
+                    slow_time_fx.play()
+                else:
+                    slow_time_fx.play()
                 Settings.slow_time_active = True
                 Settings.slow_time_start = pygame.time.get_ticks()
 
@@ -957,13 +961,13 @@ class Bullet(pygame.sprite.Sprite):
                     button_fx.play()
 
     def break_tiles(self):
-       
 
         for tile in Tiles.tiles:
 
             if self.rect.colliderect(tile["rect"]):
                 if tile["property"].get("type") == "Breakable":
-                    if self.rect.colliderect(tile["rect"]):
+
+                    if "Breakable" not in Tiles.broken_tiles:
                         break_fx.play()
                         Tiles.broken_tiles.add("Breakable")
 
@@ -1125,6 +1129,12 @@ def restart_all():
     
     Tiles.load_level(map_file)
 
+    bullet_pick_up_fx.stop() 
+    time_stop_fx.stop()
+    slow_time_fx.stop()
+    up_gravity_fx.stop()
+    down_gravity_fx.stop()
+    break_fx.stop()
     
     reset_dialogue()
     
@@ -1490,6 +1500,12 @@ while True:
 
             screen.blit(loss_screen, loss_screen_rect)
             screen.blit(restart_button, restart_button_rect)
+            bullet_pick_up_fx.stop() 
+            time_stop_fx.stop()
+            slow_time_fx.stop()
+            up_gravity_fx.stop()
+            down_gravity_fx.stop()
+            break_fx.stop()
             
 
 
@@ -1511,6 +1527,13 @@ while True:
             player_group.sprite.normal_star()
             player_group.sprite.bonus_time_star()
             player_group.sprite.bonus_bullet_star()
+
+            bullet_pick_up_fx.stop() 
+            time_stop_fx.stop()
+            slow_time_fx.stop()
+            up_gravity_fx.stop()
+            down_gravity_fx.stop()
+            break_fx.stop()
 
 
 
