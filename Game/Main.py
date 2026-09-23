@@ -614,6 +614,7 @@ class Player(pygame.sprite.Sprite):
     def load_room(self):
         if random.random() < 0.03:
             man_ogg.stop()
+            stop_music()
             Settings.player_level = 0
             man_ogg.play(-1)
             restart_all()
@@ -1227,7 +1228,7 @@ while True:
 
                     for button in level_selection:
 
-                        if button.rect.collidepoint(event.pos):
+                        if button.rect.collidepoint(event.pos) and button.level <= Settings.player_level:
                             current_level = button.level
                             Settings.player_level = current_level
 
@@ -1466,6 +1467,9 @@ while True:
         
             match Settings.playing_state:
                 case "start":
+
+                    play_music_playing()
+
                     if not Settings.paused:
                         if Settings.player_level > 0:
                             man_ogg.stop()

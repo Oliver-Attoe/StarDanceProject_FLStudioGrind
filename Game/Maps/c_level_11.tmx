@@ -71,15 +71,5 @@
     <property name="obj_type" value="button"/>
    </properties>
   </object>
-  <object id="5" name="green_button" x="400.655" y="264.159" width="128" height="32" rotation="90">
-   <properties>
-    <property name="obj_type" value="button"/>
-   </properties>
-  </object>
-  <object id="6" name="green_button" x="790.145" y="206.566" width="128" height="32" rotation="180">
-   <properties>
-    <property name="obj_type" value="button"/>
-   </properties>
-  </object>
  </objectgroup>
 </map>

@@ -23,7 +23,7 @@ class Dialogue(pygame.sprite.Sprite):
             50
         )
 
-        self.text_delay = 210
+        self.text_delay = 140
         self.last_word_time = pygame.time.get_ticks()
 
         self.word_index = 0

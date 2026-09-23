@@ -42,7 +42,7 @@ def play_music():
     playing_music_fx.stop()
 
     if not start_music_fx.get_num_channels():
-        start_music_fx.play(-1)
+        start_music_fx.play()
 
 
 def play_music_playing():
