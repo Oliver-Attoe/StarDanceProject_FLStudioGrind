@@ -30,6 +30,7 @@ Use your shots to move through the levels, avoid obstacles, use different abilit
 * **Mouse** - Aim
 * **Left Click/Enter** - Shoot
 * **A** - Re-align player
+  * **R** - Hold to restart level
 
 
 ## Features
